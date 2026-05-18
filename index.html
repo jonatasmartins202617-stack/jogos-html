@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcanum das Nove Luas — RPG 2D de Magos</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="boot" class="screen active">
+    <div class="sigil"></div>
+    <h1>Arcanum das Nove Luas</h1>
+    <p>Forjando constelações, grimórios e reinos vivos...</p>
+    <div class="loader"><span></span></div>
+  </div>
+
+  <main id="menu" class="screen menu">
+    <canvas id="menuSky" width="960" height="540" aria-hidden="true"></canvas>
+    <section class="menu-card">
+      <small>RPG 2D de fantasia mágica</small>
+      <h2>Arcanum das Nove Luas</h2>
+      <p>Escolha seu destino entre reinos humanos, élficos, sombrios, celestiais e dimensões elementais.</p>
+      <div class="menu-actions">
+        <button id="newGame">Novo jogo</button>
+        <button id="continueGame">Continuar</button>
+        <button id="openSaves">Slots de save</button>
+        <button id="openSettings">Configurações</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="creator" class="screen panel-screen">
+    <section class="glass creator-card">
+      <h2>Criação do Arquimago</h2>
+      <div class="creator-grid">
+        <label>Nome <input id="heroName" maxlength="18" value="Aerin" /></label>
+        <label>Sexo <select id="heroSex"><option>Feminino</option><option>Masculino</option><option>Não-binário</option></select></label>
+        <label>Raça <select id="heroRace"></select></label>
+        <label>Classe <select id="heroClass"></select></label>
+        <label>Aura <input id="heroAura" type="color" value="#8df7ff" /></label>
+        <label>Capa <input id="heroCape" type="color" value="#4f46e5" /></label>
+      </div>
+      <button id="startJourney">Iniciar Jornada</button>
+    </section>
+  </div>
+
+  <div id="game" class="game hidden">
+    <canvas id="gameCanvas" width="1280" height="720"></canvas>
+    <div id="hud">
+      <div class="orb red"><span id="hpText">100/100</span></div>
+      <div class="orb blue"><span id="mpText">140/140</span></div>
+      <div class="bars">
+        <div class="bar"><b>Vida</b><i id="hpBar"></i></div>
+        <div class="bar mana"><b>Mana</b><i id="mpBar"></i></div>
+        <div class="bar xp"><b>XP</b><i id="xpBar"></i></div>
+      </div>
+      <div id="regionBadge">Vale Inicial</div>
+      <canvas id="minimap" width="170" height="170"></canvas>
+    </div>
+    <div id="hotbar"></div>
+    <div id="toastLog"></div>
+    <div id="dialogue" class="glass hidden"></div>
+    <div id="tooltip" class="hidden"></div>
+  </div>
+
+  <aside id="overlay" class="overlay hidden">
+    <section class="window glass">
+      <header><h2 id="overlayTitle">Inventário</h2><button id="closeOverlay">✕</button></header>
+      <div id="overlayBody"></div>
+    </section>
+  </aside>
+
+  <div id="pause" class="screen panel-screen hidden">
+    <section class="glass pause-card">
+      <h2>Jogo pausado</h2>
+      <button data-action="resume">Continuar</button>
+      <button data-action="inventory">Inventário</button>
+      <button data-action="map">Mapa do mundo</button>
+      <button data-action="grimoire">Grimório</button>
+      <button data-action="skills">Árvore de habilidades</button>
+      <button data-action="quests">Missões</button>
+      <button data-action="save">Salvar manualmente</button>
+      <button data-action="settings">Configurações</button>
+    </section>
+  </div>
+
+  <script src="world.js" defer></script>
+  <script src="weather.js" defer></script>
+  <script src="inventory.js" defer></script>
+  <script src="quests.js" defer></script>
+  <script src="magic.js" defer></script>
+  <script src="combat.js" defer></script>
+  <script src="npc.js" defer></script>
+  <script src="audio.js" defer></script>
+  <script src="save.js" defer></script>
+  <script src="engine.js" defer></script>
+  <script src="main.js" defer></script>
+</body>
+</html>
