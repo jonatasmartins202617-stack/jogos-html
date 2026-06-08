@@ -2,98 +2,760 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arcanum das Nove Luas — RPG 2D de Magos</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#07130f" />
+  <title>Mata da Lua Branca — Gameplay Vertical</title>
+  <style>
+:root {
+  color-scheme: dark;
+  --ink: #07130f;
+  --mist: #c7f9e4;
+  --leaf: #55d178;
+  --moss: #214d2d;
+  --soil: #4f2b1d;
+  --moon: #fff8d7;
+  --hurt: #ff5f7e;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(159, 255, 211, 0.16), transparent 34%),
+    linear-gradient(180deg, #06120f 0%, #030706 100%);
+  color: var(--mist);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  touch-action: none;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  color: #07130f;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.phone-frame {
+  position: relative;
+  width: min(100vw, 56.25vh);
+  height: min(100vh, 177.78vw);
+  margin: auto;
+  overflow: hidden;
+  background: #07130f;
+  box-shadow: 0 0 0 1px rgba(255, 248, 215, 0.16), 0 28px 100px rgba(0, 0, 0, 0.7);
+  image-rendering: pixelated;
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  background: #07130f;
+}
+
+.panel {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: none;
+  place-content: center;
+  gap: 16px;
+  padding: 38px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(7, 19, 15, 0.42), rgba(3, 7, 6, 0.84)),
+    radial-gradient(circle at 50% 32%, rgba(255, 248, 215, 0.15), transparent 34%);
+  backdrop-filter: blur(3px);
+}
+
+.panel.show { display: grid; }
+
+.panel h1,
+.panel h2 {
+  margin: 0;
+  color: var(--moon);
+  font-size: clamp(2.6rem, 11vw, 4.6rem);
+  line-height: 0.88;
+  text-shadow: 0 7px 0 rgba(0, 0, 0, 0.35), 0 0 22px rgba(199, 249, 228, 0.4);
+  text-transform: uppercase;
+}
+
+.panel p {
+  max-width: 28rem;
+  margin: 0 auto;
+  color: rgba(199, 249, 228, 0.82);
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.panel small {
+  max-width: 25rem;
+  margin: 0 auto;
+  color: rgba(199, 249, 228, 0.62);
+  line-height: 1.45;
+}
+
+.eyebrow {
+  color: var(--leaf) !important;
+  font-size: 0.78rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+
+.panel button {
+  justify-self: center;
+  min-width: 180px;
+  padding: 15px 26px;
+  background: linear-gradient(180deg, #fff8d7, #68e48a);
+  box-shadow: 0 12px 0 #17351f, 0 0 34px rgba(104, 228, 138, 0.42);
+  text-transform: uppercase;
+}
+
+.panel button:active { transform: translateY(5px); box-shadow: 0 7px 0 #17351f; }
+
+.hud {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: 14px;
+  right: 14px;
+  z-index: 2;
+  pointer-events: none;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.75);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--moon);
+  font-size: clamp(13px, 3.4vw, 18px);
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hearts {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.heart {
+  width: 18px;
+  height: 18px;
+  background: var(--hurt);
+  clip-path: polygon(50% 90%, 8% 48%, 8% 20%, 28% 8%, 50% 24%, 72% 8%, 92% 20%, 92% 48%);
+  filter: drop-shadow(0 2px 0 #51131f);
+}
+
+.heart.empty { background: rgba(199, 249, 228, 0.18); }
+
+.meter {
+  width: 112px;
+  height: 8px;
+  margin-top: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 248, 215, 0.42);
+  border-radius: 999px;
+  background: rgba(3, 7, 6, 0.6);
+}
+
+.meter i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #78fff0, #fff8d7);
+}
+
+.touch {
+  position: absolute;
+  inset: auto 13px max(14px, env(safe-area-inset-bottom)) 13px;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 64px 64px 1fr 68px 68px;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.touch button {
+  width: 64px;
+  height: 64px;
+  pointer-events: auto;
+  color: rgba(255, 248, 215, 0.95);
+  background: rgba(7, 19, 15, 0.52);
+  border: 2px solid rgba(199, 249, 228, 0.22);
+  box-shadow: inset 0 0 18px rgba(199, 249, 228, 0.08), 0 10px 26px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.touch button:nth-child(3) { grid-column: 4; }
+.touch button:nth-child(4) { grid-column: 5; color: #07130f; background: rgba(255, 248, 215, 0.86); }
+.touch button.down { transform: scale(0.94); filter: brightness(1.35); }
+
+@media (hover: hover) and (pointer: fine) {
+  .touch { opacity: 0.55; }
+}
+
+  </style>
 </head>
 <body>
-  <div id="boot" class="screen active">
-    <div class="sigil"></div>
-    <h1>Arcanum das Nove Luas</h1>
-    <p>Forjando constelações, grimórios e reinos vivos...</p>
-    <div class="loader"><span></span></div>
-  </div>
+  <main class="phone-frame" aria-label="Jogo vertical Mata da Lua Branca">
+    <canvas id="game" width="540" height="960" aria-label="Gameplay de plataforma 2D pixel art"></canvas>
 
-  <main id="menu" class="screen menu">
-    <canvas id="menuSky" width="960" height="540" aria-hidden="true"></canvas>
-    <section class="menu-card">
-      <small>RPG 2D de fantasia mágica</small>
-      <h2>Arcanum das Nove Luas</h2>
-      <p>Escolha seu destino entre reinos humanos, élficos, sombrios, celestiais e dimensões elementais.</p>
-      <div class="menu-actions">
-        <button id="newGame">Novo jogo</button>
-        <button id="continueGame">Continuar</button>
-        <button id="openSaves">Slots de save</button>
-        <button id="openSettings">Configurações</button>
-      </div>
+    <section id="startPanel" class="panel show" aria-live="polite">
+      <p class="eyebrow">indie pixel forest</p>
+      <h1>Mata da Lua Branca</h1>
+      <p>Corra, salte, corte sombras e suba por fases de floresta em uma aventura vertical inspirada em metroidvanias sombrios.</p>
+      <button id="startButton">Jogar</button>
+      <small>Teclado: A/D ou ←/→, Espaço/W/↑ pula, J ataca. No celular use os botões na tela.</small>
     </section>
+
+    <section id="gameOverPanel" class="panel" aria-live="polite">
+      <p class="eyebrow">a floresta venceu...</p>
+      <h2>Fim da corrida</h2>
+      <p id="finalStats"></p>
+      <button id="restartButton">Tentar de novo</button>
+    </section>
+
+    <div class="hud" aria-hidden="true">
+      <div class="row">
+        <span id="levelText">Fase 1</span>
+        <span id="scoreText">0</span>
+      </div>
+      <div class="hearts" id="hearts"></div>
+      <div class="meter"><i id="dashMeter"></i></div>
+    </div>
+
+    <nav class="touch" aria-label="Controles de toque">
+      <button data-key="left">◀</button>
+      <button data-key="right">▶</button>
+      <button data-key="jump">▲</button>
+      <button data-key="attack">✦</button>
+    </nav>
   </main>
 
-  <div id="creator" class="screen panel-screen">
-    <section class="glass creator-card">
-      <h2>Criação do Arquimago</h2>
-      <div class="creator-grid">
-        <label>Nome <input id="heroName" maxlength="18" value="Aerin" /></label>
-        <label>Sexo <select id="heroSex"><option>Feminino</option><option>Masculino</option><option>Não-binário</option></select></label>
-        <label>Raça <select id="heroRace"></select></label>
-        <label>Classe <select id="heroClass"></select></label>
-        <label>Aura <input id="heroAura" type="color" value="#8df7ff" /></label>
-        <label>Capa <input id="heroCape" type="color" value="#4f46e5" /></label>
-      </div>
-      <button id="startJourney">Iniciar Jornada</button>
-    </section>
-  </div>
+  <script>
+(() => {
+  const canvas = document.querySelector('#game');
+  const ctx = canvas.getContext('2d');
+  const startPanel = document.querySelector('#startPanel');
+  const gameOverPanel = document.querySelector('#gameOverPanel');
+  const startButton = document.querySelector('#startButton');
+  const restartButton = document.querySelector('#restartButton');
+  const levelText = document.querySelector('#levelText');
+  const scoreText = document.querySelector('#scoreText');
+  const hearts = document.querySelector('#hearts');
+  const dashMeter = document.querySelector('#dashMeter');
+  const finalStats = document.querySelector('#finalStats');
 
-  <div id="game" class="game hidden">
-    <canvas id="gameCanvas" width="1280" height="720"></canvas>
-    <div id="hud">
-      <div class="orb red"><span id="hpText">100/100</span></div>
-      <div class="orb blue"><span id="mpText">140/140</span></div>
-      <div class="bars">
-        <div class="bar"><b>Vida</b><i id="hpBar"></i></div>
-        <div class="bar mana"><b>Mana</b><i id="mpBar"></i></div>
-        <div class="bar xp"><b>XP</b><i id="xpBar"></i></div>
-      </div>
-      <div id="regionBadge">Vale Inicial</div>
-      <canvas id="minimap" width="170" height="170"></canvas>
-    </div>
-    <div id="hotbar"></div>
-    <div id="toastLog"></div>
-    <div id="dialogue" class="glass hidden"></div>
-    <div id="tooltip" class="hidden"></div>
-  </div>
+  const W = canvas.width;
+  const H = canvas.height;
+  const WORLD_H = 5200;
+  const GRAVITY = 0.72;
+  const FRICTION = 0.82;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-  <aside id="overlay" class="overlay hidden">
-    <section class="window glass">
-      <header><h2 id="overlayTitle">Inventário</h2><button id="closeOverlay">✕</button></header>
-      <div id="overlayBody"></div>
-    </section>
-  </aside>
+  const keys = { left: false, right: false, jump: false, attack: false };
+  let lastTime = 0;
+  let cameraY = WORLD_H - H;
+  let state = 'menu';
+  let shake = 0;
+  let slashFlash = 0;
+  let level = 1;
+  let score = 0;
+  let bestHeight = 0;
+  let platforms = [];
+  let enemies = [];
+  let motes = [];
+  let fireflies = [];
 
-  <div id="pause" class="screen panel-screen hidden">
-    <section class="glass pause-card">
-      <h2>Jogo pausado</h2>
-      <button data-action="resume">Continuar</button>
-      <button data-action="inventory">Inventário</button>
-      <button data-action="map">Mapa do mundo</button>
-      <button data-action="grimoire">Grimório</button>
-      <button data-action="skills">Árvore de habilidades</button>
-      <button data-action="quests">Missões</button>
-      <button data-action="save">Salvar manualmente</button>
-      <button data-action="settings">Configurações</button>
-    </section>
-  </div>
+  const hero = {
+    x: W / 2 - 14,
+    y: WORLD_H - 170,
+    w: 28,
+    h: 42,
+    vx: 0,
+    vy: 0,
+    face: 1,
+    hp: 5,
+    maxHp: 5,
+    onGround: false,
+    coyote: 0,
+    jumpBuffer: 0,
+    attack: 0,
+    invuln: 0,
+    dash: 1,
+    kills: 0,
+  };
 
-  <script src="world.js" defer></script>
-  <script src="weather.js" defer></script>
-  <script src="inventory.js" defer></script>
-  <script src="quests.js" defer></script>
-  <script src="magic.js" defer></script>
-  <script src="combat.js" defer></script>
-  <script src="npc.js" defer></script>
-  <script src="audio.js" defer></script>
-  <script src="save.js" defer></script>
-  <script src="engine.js" defer></script>
-  <script src="main.js" defer></script>
+  function buildWorld() {
+    platforms = [];
+    enemies = [];
+    motes = [];
+    fireflies = Array.from({ length: 56 }, (_, i) => ({
+      x: rand(10, W - 10),
+      y: rand(0, WORLD_H),
+      s: rand(0.7, 2.2),
+      p: i * 0.77,
+    }));
+
+    platforms.push({ x: 0, y: WORLD_H - 96, w: W, h: 120, kind: 'ground' });
+    let y = WORLD_H - 260;
+    let side = 0;
+    while (y > 120) {
+      const width = rand(112, 190);
+      const x = side ? rand(W * 0.48, W - width - 22) : rand(22, W * 0.45 - width * 0.25);
+      platforms.push({ x, y, w: width, h: 28, kind: Math.random() > 0.16 ? 'grass' : 'root' });
+      if (Math.random() > 0.43) enemies.push(makeEnemy(x + width / 2 - 15, y - 34, y));
+      if (Math.random() > 0.5) motes.push({ x: x + width / 2, y: y - 38, w: 16, h: 16, got: false, bob: rand(0, 9) });
+      y -= rand(116, 164);
+      side = 1 - side;
+    }
+    platforms.push({ x: 76, y: 42, w: 390, h: 32, kind: 'altar' });
+  }
+
+  function makeEnemy(x, y, anchorY) {
+    const type = Math.random() > 0.58 ? 'mossling' : 'shade';
+    return {
+      type,
+      x,
+      y,
+      w: type === 'shade' ? 30 : 34,
+      h: type === 'shade' ? 30 : 28,
+      vx: type === 'shade' ? rand(-1.1, 1.1) : rand(-0.85, 0.85),
+      vy: 0,
+      hp: type === 'shade' ? 1 : 2,
+      anchorY,
+      hurt: 0,
+      dead: false,
+      pulse: rand(0, 10),
+    };
+  }
+
+  function reset() {
+    buildWorld();
+    Object.assign(hero, {
+      x: W / 2 - 14,
+      y: WORLD_H - 170,
+      vx: 0,
+      vy: 0,
+      face: 1,
+      hp: 5,
+      onGround: false,
+      coyote: 0,
+      jumpBuffer: 0,
+      attack: 0,
+      invuln: 0,
+      dash: 1,
+      kills: 0,
+    });
+    level = 1;
+    score = 0;
+    bestHeight = 0;
+    cameraY = WORLD_H - H;
+    shake = 0;
+    slashFlash = 0;
+    state = 'playing';
+    startPanel.classList.remove('show');
+    gameOverPanel.classList.remove('show');
+    updateHud();
+  }
+
+  function updateHud() {
+    levelText.textContent = `Fase ${level}`;
+    scoreText.textContent = `${score.toString().padStart(5, '0')}`;
+    hearts.innerHTML = Array.from({ length: hero.maxHp }, (_, i) => `<span class="heart ${i >= hero.hp ? 'empty' : ''}"></span>`).join('');
+    dashMeter.style.width = `${hero.dash * 100}%`;
+  }
+
+  function keyName(code) {
+    if (['ArrowLeft', 'KeyA'].includes(code)) return 'left';
+    if (['ArrowRight', 'KeyD'].includes(code)) return 'right';
+    if (['ArrowUp', 'KeyW', 'Space'].includes(code)) return 'jump';
+    if (['KeyJ', 'KeyK', 'KeyX'].includes(code)) return 'attack';
+    return null;
+  }
+
+  addEventListener('keydown', (event) => {
+    const key = keyName(event.code);
+    if (!key) return;
+    event.preventDefault();
+    keys[key] = true;
+    if (key === 'jump') hero.jumpBuffer = 9;
+    if (key === 'attack') doAttack();
+  });
+
+  addEventListener('keyup', (event) => {
+    const key = keyName(event.code);
+    if (key) keys[key] = false;
+  });
+
+  document.querySelectorAll('.touch button').forEach((button) => {
+    const key = button.dataset.key;
+    const set = (down) => {
+      keys[key] = down;
+      button.classList.toggle('down', down);
+      if (down && key === 'jump') hero.jumpBuffer = 9;
+      if (down && key === 'attack') doAttack();
+    };
+    button.addEventListener('pointerdown', (event) => { event.preventDefault(); set(true); button.setPointerCapture(event.pointerId); });
+    button.addEventListener('pointerup', () => set(false));
+    button.addEventListener('pointercancel', () => set(false));
+    button.addEventListener('pointerleave', () => set(false));
+  });
+
+  startButton.addEventListener('click', reset);
+  restartButton.addEventListener('click', reset);
+
+  function doAttack() {
+    if (state !== 'playing' || hero.attack > 0) return;
+    hero.attack = 13;
+    slashFlash = 8;
+    const blade = { x: hero.face > 0 ? hero.x + hero.w - 4 : hero.x - 32, y: hero.y + 6, w: 36, h: 26 };
+    enemies.forEach((enemy) => {
+      if (enemy.dead || !hit(blade, enemy)) return;
+      enemy.hp -= 1;
+      enemy.hurt = 10;
+      enemy.vx += hero.face * 5;
+      enemy.vy = -5;
+      shake = 7;
+      if (enemy.hp <= 0) {
+        enemy.dead = true;
+        hero.kills += 1;
+        score += enemy.type === 'shade' ? 80 : 130;
+        hero.dash = clamp(hero.dash + 0.35, 0, 1);
+        burst(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2, '#c7f9e4', 14);
+      }
+    });
+  }
+
+  function burst(x, y, color, amount) {
+    for (let i = 0; i < amount; i += 1) {
+      motes.push({ x, y, w: 5, h: 5, got: true, life: rand(18, 42), vx: rand(-3, 3), vy: rand(-4, 1), color });
+    }
+  }
+
+  function update() {
+    if (state !== 'playing') return;
+
+    const accel = hero.onGround ? 1.15 : 0.72;
+    if (keys.left) { hero.vx -= accel; hero.face = -1; }
+    if (keys.right) { hero.vx += accel; hero.face = 1; }
+    hero.vx = clamp(hero.vx, -7, 7);
+    hero.vy += GRAVITY;
+    hero.jumpBuffer = Math.max(0, hero.jumpBuffer - 1);
+    hero.coyote = hero.onGround ? 8 : Math.max(0, hero.coyote - 1);
+
+    if (hero.jumpBuffer && hero.coyote) {
+      hero.vy = -15.3;
+      hero.jumpBuffer = 0;
+      hero.coyote = 0;
+      hero.onGround = false;
+      burst(hero.x + hero.w / 2, hero.y + hero.h, '#68e48a', 7);
+    }
+    if (!keys.jump && hero.vy < -5.4) hero.vy *= 0.86;
+
+    hero.x += hero.vx;
+    hero.x = clamp(hero.x, 5, W - hero.w - 5);
+    hero.vx *= FRICTION;
+
+    hero.y += hero.vy;
+    hero.onGround = false;
+    platforms.forEach((p) => {
+      const wasAbove = hero.y + hero.h - hero.vy <= p.y + 3;
+      if (hero.vy >= 0 && wasAbove && hit(hero, p)) {
+        hero.y = p.y - hero.h;
+        hero.vy = 0;
+        hero.onGround = true;
+        hero.dash = clamp(hero.dash + 0.015, 0, 1);
+      }
+    });
+
+    if (hero.attack > 0) hero.attack -= 1;
+    if (hero.invuln > 0) hero.invuln -= 1;
+    if (slashFlash > 0) slashFlash -= 1;
+    if (shake > 0) shake *= 0.82;
+
+    updateEnemies();
+    updateCollectibles();
+
+    const currentHeight = WORLD_H - hero.y;
+    if (currentHeight > bestHeight) score += Math.floor((currentHeight - bestHeight) * 0.08);
+    bestHeight = Math.max(bestHeight, currentHeight);
+    const nextLevel = clamp(1 + Math.floor(bestHeight / 760), 1, 7);
+    if (nextLevel !== level) {
+      level = nextLevel;
+      score += 250;
+      burst(hero.x + hero.w / 2, hero.y, '#fff8d7', 18);
+    }
+    const desired = clamp(hero.y - H * 0.48, 0, WORLD_H - H);
+    cameraY += (desired - cameraY) * 0.09;
+
+    if (hero.y - cameraY > H + 180 || hero.hp <= 0) endGame();
+    if (hero.y < 68) {
+      score += 2000;
+      level = 7;
+      endGame(true);
+    }
+    updateHud();
+  }
+
+  function updateEnemies() {
+    enemies.forEach((enemy) => {
+      if (enemy.dead) return;
+      enemy.pulse += 0.08;
+      if (enemy.type === 'shade') {
+        enemy.x += enemy.vx + Math.sin(enemy.pulse) * 0.7;
+        enemy.y = enemy.anchorY - 48 + Math.sin(enemy.pulse * 1.6) * 18;
+      } else {
+        enemy.vy += GRAVITY;
+        enemy.x += enemy.vx;
+        enemy.y += enemy.vy;
+        const floor = platforms.find((p) => enemy.x + enemy.w > p.x && enemy.x < p.x + p.w && enemy.y + enemy.h >= p.y && enemy.y + enemy.h <= p.y + 24);
+        if (floor) { enemy.y = floor.y - enemy.h; enemy.vy = 0; }
+        if (Math.random() < 0.015) enemy.vx *= -1;
+      }
+      if (enemy.x < 8 || enemy.x + enemy.w > W - 8) enemy.vx *= -1;
+      enemy.x = clamp(enemy.x, 8, W - enemy.w - 8);
+      enemy.hurt = Math.max(0, enemy.hurt - 1);
+
+      if (hero.invuln <= 0 && hit(hero, enemy)) {
+        hero.hp -= 1;
+        hero.invuln = 70;
+        hero.vx = hero.x < enemy.x ? -8 : 8;
+        hero.vy = -8;
+        shake = 16;
+        burst(hero.x + hero.w / 2, hero.y + hero.h / 2, '#ff5f7e', 12);
+      }
+    });
+    enemies = enemies.filter((enemy) => !enemy.dead || enemy.y - cameraY < H + 200);
+  }
+
+  function updateCollectibles() {
+    motes.forEach((mote) => {
+      if (mote.life) {
+        mote.life -= 1;
+        mote.x += mote.vx;
+        mote.y += mote.vy;
+        mote.vy += 0.12;
+        return;
+      }
+      if (!mote.got) {
+        mote.bob += 0.08;
+        const box = { x: mote.x - 10, y: mote.y - 10 + Math.sin(mote.bob) * 5, w: 20, h: 20 };
+        if (hit(hero, box)) {
+          mote.got = true;
+          score += 60;
+          hero.dash = clamp(hero.dash + 0.18, 0, 1);
+          burst(mote.x, mote.y, '#fff8d7', 8);
+        }
+      }
+    });
+    motes = motes.filter((mote) => !mote.life || mote.life > 0);
+  }
+
+  function endGame(won = false) {
+    state = 'over';
+    finalStats.textContent = won
+      ? `Você alcançou o altar lunar! Pontos: ${score}. Inimigos derrotados: ${hero.kills}.`
+      : `Pontos: ${score}. Altura: ${Math.floor(bestHeight)}m. Inimigos derrotados: ${hero.kills}.`;
+    gameOverPanel.querySelector('.eyebrow').textContent = won ? 'a lua respondeu!' : 'a floresta venceu...';
+    gameOverPanel.querySelector('h2').textContent = won ? 'Vitória lunar' : 'Fim da corrida';
+    gameOverPanel.classList.add('show');
+  }
+
+  function draw() {
+    ctx.save();
+    const sx = shake ? rand(-shake, shake) : 0;
+    const sy = shake ? rand(-shake, shake) : 0;
+    ctx.translate(sx, sy);
+    drawForest();
+    ctx.translate(0, -Math.floor(cameraY));
+    platforms.forEach(drawPlatform);
+    motes.forEach(drawMote);
+    enemies.forEach(drawEnemy);
+    drawHero();
+    ctx.restore();
+    if (state === 'menu') drawTitleScene();
+  }
+
+  function drawForest() {
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#102a27');
+    sky.addColorStop(0.48, '#0b1c18');
+    sky.addColorStop(1, '#05100d');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = 'rgba(255,248,215,0.86)';
+    ctx.beginPath();
+    ctx.arc(W * 0.73, 118 - cameraY * 0.025, 46, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let layer = 0; layer < 3; layer += 1) {
+      const par = 0.12 + layer * 0.08;
+      const base = 338 + layer * 94 - (cameraY * par) % 180;
+      ctx.fillStyle = [`#132d24`, '#0f241d', '#0a1915'][layer];
+      for (let i = -1; i < 8; i += 1) {
+        const x = i * 92 + layer * 31;
+        const y = base + Math.sin(i * 2.1 + layer) * 24;
+        ctx.fillRect(x + 34, y - 130, 18 + layer * 5, H);
+        ctx.beginPath();
+        ctx.moveTo(x - 24, y - 82);
+        ctx.lineTo(x + 44, y - 194);
+        ctx.lineTo(x + 120, y - 82);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x - 10, y - 38);
+        ctx.lineTo(x + 48, y - 142);
+        ctx.lineTo(x + 104, y - 38);
+        ctx.fill();
+      }
+    }
+
+    fireflies.forEach((f) => {
+      const x = (f.x + Math.sin(performance.now() * 0.001 + f.p) * 18 + W) % W;
+      const y = (f.y - cameraY * 0.28 + WORLD_H) % H;
+      ctx.fillStyle = `rgba(255,248,215,${0.28 + Math.sin(performance.now() * 0.003 + f.p) * 0.18})`;
+      ctx.fillRect(Math.floor(x), Math.floor(y), f.s, f.s);
+    });
+  }
+
+  function drawPlatform(p) {
+    ctx.fillStyle = p.kind === 'altar' ? '#d8e7c6' : '#2f6d38';
+    ctx.fillRect(p.x, p.y, p.w, 8);
+    for (let x = p.x; x < p.x + p.w; x += 12) {
+      ctx.fillStyle = x % 24 ? '#67c96f' : '#9af28c';
+      ctx.fillRect(x, p.y - 5 - ((x / 12) % 2), 10, 6);
+    }
+    ctx.fillStyle = p.kind === 'root' ? '#3b2419' : '#57301f';
+    ctx.fillRect(p.x, p.y + 8, p.w, p.h - 8);
+    for (let x = p.x + 4; x < p.x + p.w; x += 18) {
+      ctx.fillStyle = x % 36 ? '#7a482d' : '#2b1a12';
+      ctx.fillRect(x, p.y + 15, 9, 5);
+      ctx.fillRect(x + 3, p.y + 23, 4, 4);
+    }
+  }
+
+  function drawHero() {
+    const blink = hero.invuln > 0 && Math.floor(hero.invuln / 5) % 2 === 0;
+    if (blink) return;
+    const x = Math.floor(hero.x);
+    const y = Math.floor(hero.y);
+    ctx.save();
+    ctx.translate(x + hero.w / 2, y);
+    ctx.scale(hero.face, 1);
+    ctx.translate(-hero.w / 2, 0);
+
+    ctx.fillStyle = '#101918';
+    ctx.fillRect(7, 7, 15, 31);
+    ctx.fillStyle = '#f6f0d4';
+    ctx.fillRect(8, 1, 13, 11);
+    ctx.fillStyle = '#07130f';
+    ctx.fillRect(10, 5, 4, 3);
+    ctx.fillStyle = '#bdf7e9';
+    ctx.fillRect(15, 5, 3, 3);
+    ctx.fillStyle = '#263532';
+    ctx.fillRect(4, 12, 7, 20);
+    ctx.fillRect(18, 12, 7, 20);
+    ctx.fillStyle = '#f4ffff';
+    ctx.fillRect(3, 33, 8, 7);
+    ctx.fillRect(18, 33, 8, 7);
+    ctx.fillStyle = '#78fff0';
+    ctx.fillRect(22, 16, 3, 14);
+    ctx.fillRect(24, 27, 12, 3);
+
+    if (hero.attack > 0) {
+      ctx.fillStyle = `rgba(255,248,215,${0.45 + slashFlash * 0.04})`;
+      ctx.fillRect(25, 8, 34, 4);
+      ctx.fillRect(39, 12, 16, 4);
+    }
+    ctx.restore();
+  }
+
+  function drawEnemy(enemy) {
+    if (enemy.dead) return;
+    const x = Math.floor(enemy.x);
+    const y = Math.floor(enemy.y);
+    ctx.fillStyle = enemy.hurt ? '#fff8d7' : enemy.type === 'shade' ? '#11101f' : '#315832';
+    if (enemy.type === 'shade') {
+      ctx.fillRect(x + 7, y + 6, 18, 18);
+      ctx.fillRect(x + 3, y + 16, 24, 9);
+      ctx.fillStyle = '#c7f9e4';
+      ctx.fillRect(x + 10, y + 12, 4, 3);
+      ctx.fillRect(x + 20, y + 12, 4, 3);
+    } else {
+      ctx.fillRect(x + 4, y + 8, 26, 19);
+      ctx.fillRect(x + 9, y + 2, 17, 10);
+      ctx.fillStyle = '#9af28c';
+      ctx.fillRect(x + 8, y + 13, 5, 4);
+      ctx.fillRect(x + 21, y + 13, 5, 4);
+      ctx.fillStyle = '#234125';
+      ctx.fillRect(x + 1, y + 24, 9, 5);
+      ctx.fillRect(x + 24, y + 24, 9, 5);
+    }
+  }
+
+  function drawMote(mote) {
+    if (mote.life) {
+      ctx.fillStyle = mote.color;
+      ctx.globalAlpha = clamp(mote.life / 35, 0, 1);
+      ctx.fillRect(mote.x, mote.y, mote.w, mote.h);
+      ctx.globalAlpha = 1;
+      return;
+    }
+    if (mote.got) return;
+    const y = mote.y + Math.sin(mote.bob) * 5;
+    ctx.fillStyle = '#fff8d7';
+    ctx.fillRect(mote.x - 5, y - 5, 10, 10);
+    ctx.fillStyle = '#68e48a';
+    ctx.fillRect(mote.x - 2, y - 9, 4, 18);
+    ctx.fillRect(mote.x - 9, y - 2, 18, 4);
+  }
+
+  function drawTitleScene() {
+    ctx.fillStyle = 'rgba(3,7,6,0.22)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(W / 2 - 14, H * 0.58);
+    ctx.scale(2.8, 2.8);
+    drawHeroSilhouette();
+    ctx.restore();
+  }
+
+  function drawHeroSilhouette() {
+    ctx.fillStyle = '#050908';
+    ctx.fillRect(7, 7, 15, 31);
+    ctx.fillStyle = '#fff8d7';
+    ctx.fillRect(8, 1, 13, 11);
+    ctx.fillStyle = '#78fff0';
+    ctx.fillRect(22, 16, 3, 14);
+    ctx.fillRect(24, 27, 12, 3);
+  }
+
+  function loop(time = 0) {
+    const steps = Math.min(3, Math.max(1, Math.round((time - lastTime) / 16.67)) || 1);
+    lastTime = time;
+    for (let i = 0; i < steps; i += 1) update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  buildWorld();
+  updateHud();
+  loop();
+})();
+
+  </script>
 </body>
 </html>
