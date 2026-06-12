@@ -2,98 +2,1476 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arcanum das Nove Luas — RPG 2D de Magos</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#04070b" />
+  <title>Mata da Lua Branca — Edição Premium</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #04070b;
+      --panel: rgba(7, 12, 19, 0.82);
+      --panel-2: rgba(12, 24, 34, 0.72);
+      --line: rgba(255, 244, 190, 0.22);
+      --moon: #fff3be;
+      --gold: #ffd46b;
+      --leaf: #58f596;
+      --cyan: #7df7ff;
+      --violet: #af85ff;
+      --danger: #ff5b78;
+      --xp: #b07cff;
+      --energy: #63f7d4;
+      --text: #eefdf4;
+      --muted: rgba(238, 253, 244, 0.68);
+      --shadow: 0 22px 90px rgba(0, 0, 0, 0.62);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% -12%, rgba(255, 243, 190, 0.16), transparent 32%),
+        radial-gradient(circle at 18% 18%, rgba(125, 247, 255, 0.10), transparent 30%),
+        linear-gradient(180deg, #07111a, #030407 72%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      touch-action: none;
+      user-select: none;
+    }
+
+    button,
+    input,
+    select { font: inherit; }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .game-shell {
+      position: relative;
+      width: min(100vw, 56.25vh);
+      height: min(100vh, 177.78vw);
+      margin: auto;
+      overflow: hidden;
+      background: #04070b;
+      box-shadow: 0 0 0 1px rgba(255, 243, 190, 0.14), 0 32px 130px rgba(0, 0, 0, 0.78);
+      image-rendering: pixelated;
+      isolation: isolate;
+    }
+
+    #game {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #04070b;
+      image-rendering: pixelated;
+    }
+
+    .screen,
+    .modal {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      padding: clamp(18px, 4.8vw, 34px);
+      background:
+        linear-gradient(180deg, rgba(4, 7, 11, 0.14), rgba(4, 7, 11, 0.76)),
+        radial-gradient(circle at 50% 20%, rgba(255, 243, 190, 0.14), transparent 34%);
+      backdrop-filter: blur(4px);
+    }
+
+    .screen.show,
+    .modal.show { display: grid; place-items: center; }
+
+    .screen { place-items: center; }
+
+    .menu-ambient {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .moon {
+      position: absolute;
+      left: 50%;
+      top: 7%;
+      width: min(58vw, 320px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      background:
+        radial-gradient(circle at 35% 28%, #fffef3, #fff3be 48%, #dec875 70%, rgba(222, 200, 117, 0.32) 72%, transparent 76%);
+      box-shadow: 0 0 56px rgba(255, 243, 190, 0.72), 0 0 150px rgba(125, 247, 255, 0.28);
+      animation: moonPulse 4.4s ease-in-out infinite;
+    }
+
+    .mist,
+    .mist::before,
+    .mist::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background:
+        radial-gradient(ellipse at 20% 64%, rgba(202, 242, 255, 0.10), transparent 34%),
+        radial-gradient(ellipse at 82% 48%, rgba(255, 255, 255, 0.08), transparent 28%),
+        linear-gradient(90deg, transparent, rgba(210, 255, 242, 0.08), transparent);
+      filter: blur(12px);
+      animation: drift 11s linear infinite;
+    }
+
+    .mist::before { animation-duration: 17s; transform: translateX(-22%); }
+    .mist::after { animation-duration: 23s; transform: translateX(18%); }
+
+    .tree-silhouette {
+      position: absolute;
+      inset: auto -10% 0 -10%;
+      height: 46%;
+      background:
+        linear-gradient(172deg, transparent 0 32%, rgba(2, 9, 7, 0.95) 33% 100%),
+        repeating-linear-gradient(90deg, rgba(7, 22, 15, 0.96) 0 18px, rgba(3, 10, 8, 0.96) 18px 31px);
+      clip-path: polygon(0 40%, 5% 24%, 11% 42%, 17% 18%, 24% 44%, 31% 22%, 39% 46%, 47% 18%, 55% 43%, 64% 17%, 72% 45%, 80% 21%, 89% 41%, 96% 20%, 100% 38%, 100% 100%, 0 100%);
+      transform-origin: bottom;
+      animation: sway 5.6s ease-in-out infinite;
+    }
+
+    .fireflies { position: absolute; inset: 0; }
+    .fireflies i {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--moon);
+      box-shadow: 0 0 12px var(--moon);
+      animation: fly 6s ease-in-out infinite;
+    }
+
+    .menu-card,
+    .modal-card {
+      position: relative;
+      width: min(100%, 460px);
+      padding: clamp(20px, 5vw, 34px);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: linear-gradient(180deg, rgba(12, 24, 34, 0.86), rgba(4, 7, 11, 0.84));
+      box-shadow: var(--shadow), inset 0 0 44px rgba(125, 247, 255, 0.05);
+      text-align: center;
+    }
+
+    .brand {
+      margin: 0 0 10px;
+      color: var(--moon);
+      font-size: clamp(2.55rem, 11vw, 4.75rem);
+      line-height: 0.84;
+      letter-spacing: -0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 8px 0 rgba(0, 0, 0, 0.42), 0 0 34px rgba(255, 243, 190, 0.55);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--cyan);
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      margin: 0 auto 22px;
+      max-width: 34ch;
+      color: var(--muted);
+      font-weight: 700;
+      line-height: 1.48;
+    }
+
+    .menu-grid,
+    .modal-actions {
+      display: grid;
+      gap: 12px;
+    }
+
+    .premium-btn {
+      position: relative;
+      min-height: 56px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 243, 190, 0.42);
+      border-radius: 18px;
+      background:
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent) -160% 0 / 58% 100% no-repeat,
+        linear-gradient(180deg, rgba(255, 244, 190, 0.98), rgba(255, 190, 73, 0.94));
+      color: #27190a;
+      box-shadow: 0 12px 0 #5a3510, 0 0 26px rgba(255, 212, 107, 0.38), inset 0 0 18px rgba(255, 255, 255, 0.32);
+      font-weight: 1000;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+      animation: buttonPulse 2.25s ease-in-out infinite;
+    }
+
+    .premium-btn:hover,
+    .premium-btn:focus-visible {
+      filter: brightness(1.14) saturate(1.12);
+      transform: translateY(-3px) scale(1.015);
+      background-position: 220% 0, 0 0;
+      box-shadow: 0 15px 0 #5a3510, 0 0 38px rgba(255, 243, 190, 0.62), inset 0 0 22px rgba(255, 255, 255, 0.38);
+    }
+
+    .premium-btn:active,
+    .premium-btn.pressed {
+      transform: translateY(7px) scale(0.985);
+      box-shadow: 0 5px 0 #5a3510, 0 0 18px rgba(255, 212, 107, 0.35);
+    }
+
+    .premium-btn.secondary {
+      background:
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent) -160% 0 / 58% 100% no-repeat,
+        linear-gradient(180deg, rgba(27, 58, 69, 0.96), rgba(10, 23, 33, 0.96));
+      color: var(--text);
+      border-color: rgba(125, 247, 255, 0.28);
+      box-shadow: 0 10px 0 #041018, 0 0 20px rgba(125, 247, 255, 0.14), inset 0 0 18px rgba(125, 247, 255, 0.08);
+      animation: none;
+    }
+
+    .premium-btn.restart {
+      background:
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.20), transparent) -160% 0 / 58% 100% no-repeat,
+        linear-gradient(180deg, #fff7c9, #ffd46b 54%, #cc7e25);
+      box-shadow: 0 12px 0 #68400d, 0 0 34px rgba(255, 243, 190, 0.55), inset 0 0 24px rgba(255, 255, 255, 0.36);
+    }
+
+    .hud {
+      position: absolute;
+      top: max(10px, env(safe-area-inset-top));
+      left: 10px;
+      right: 10px;
+      z-index: 8;
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .hud-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .hero-card,
+    .counter-card,
+    .quest-toast {
+      border: 1px solid rgba(255, 243, 190, 0.16);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(7, 12, 19, 0.74), rgba(7, 12, 19, 0.44));
+      box-shadow: inset 0 0 22px rgba(125, 247, 255, 0.04), 0 12px 32px rgba(0, 0, 0, 0.24);
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-card { padding: 8px; }
+
+    .hero-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .portrait {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255, 243, 190, 0.28);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #233b39, #07120f);
+      box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.22), 0 0 18px rgba(125, 247, 255, 0.12);
+      image-rendering: pixelated;
+    }
+
+    .name-block {
+      min-width: 0;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .name-block b {
+      display: block;
+      overflow: hidden;
+      color: var(--moon);
+      font-size: 0.82rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .name-block small { color: var(--muted); font-size: 0.68rem; font-weight: 800; }
+
+    .bar {
+      position: relative;
+      height: 12px;
+      margin-top: 5px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.36);
+    }
+
+    .bar i {
+      display: block;
+      width: 50%;
+      height: 100%;
+      border-radius: inherit;
+      transition: width 0.28s ease;
+    }
+
+    .bar.hp i { background: linear-gradient(90deg, #ff3f67, #ff9a76); box-shadow: 0 0 14px rgba(255, 91, 120, 0.72); }
+    .bar.xp i { background: linear-gradient(90deg, #805cff, #dcb5ff); box-shadow: 0 0 14px rgba(176, 124, 255, 0.58); }
+    .bar.energy i { background: linear-gradient(90deg, #31d6ba, #9effec); box-shadow: 0 0 14px rgba(99, 247, 212, 0.58); }
+
+    .counter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(54px, 1fr));
+      gap: 6px;
+    }
+
+    .counter-card {
+      min-width: 58px;
+      padding: 7px 8px;
+      text-align: center;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .counter-card span { display: block; font-size: 0.66rem; color: var(--muted); font-weight: 900; }
+    .counter-card b { color: var(--moon); font-size: 0.86rem; }
+
+    .quick-actions {
+      display: flex;
+      gap: 7px;
+      pointer-events: auto;
+    }
+
+    .mini-btn {
+      min-width: 42px;
+      height: 38px;
+      border: 1px solid rgba(125, 247, 255, 0.22);
+      border-radius: 12px;
+      background: rgba(7, 12, 19, 0.62);
+      box-shadow: inset 0 0 14px rgba(125, 247, 255, 0.06);
+      color: var(--moon);
+      font-weight: 1000;
+    }
+
+    .touch-ui {
+      position: absolute;
+      inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px;
+      z-index: 9;
+      display: grid;
+      grid-template-columns: 128px 1fr 70px 70px;
+      gap: 10px;
+      align-items: end;
+      pointer-events: none;
+    }
+
+    .joystick {
+      position: relative;
+      width: 128px;
+      height: 128px;
+      border: 2px solid rgba(125, 247, 255, 0.22);
+      border-radius: 50%;
+      background: rgba(7, 12, 19, 0.44);
+      box-shadow: inset 0 0 28px rgba(125, 247, 255, 0.07), 0 15px 36px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(4px);
+      pointer-events: auto;
+    }
+
+    .stick {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.42), rgba(125, 247, 255, 0.24)), rgba(7, 12, 19, 0.72);
+      border: 2px solid rgba(255, 243, 190, 0.28);
+    }
+
+    .action-btn {
+      width: 68px;
+      height: 68px;
+      border: 2px solid rgba(255, 243, 190, 0.28);
+      border-radius: 50%;
+      background: rgba(7, 12, 19, 0.54);
+      box-shadow: inset 0 0 22px rgba(255, 243, 190, 0.08), 0 12px 30px rgba(0, 0, 0, 0.34);
+      color: var(--moon);
+      font-size: 1.35rem;
+      font-weight: 1000;
+      pointer-events: auto;
+      backdrop-filter: blur(4px);
+    }
+
+    .action-btn.attack { background: linear-gradient(180deg, rgba(255, 243, 190, 0.9), rgba(255, 162, 91, 0.82)); color: #251206; }
+    .action-btn.down { transform: scale(0.92); filter: brightness(1.25); }
+
+    .overlay-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      max-height: 62vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .slot,
+    .item-card,
+    .skill-card,
+    .rank-row,
+    .setting-row,
+    .credits-box {
+      padding: 12px;
+      border: 1px solid rgba(255, 243, 190, 0.15);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      text-align: left;
+    }
+
+    .slot b,
+    .item-card b,
+    .skill-card b { color: var(--moon); }
+    .slot small,
+    .item-card small,
+    .skill-card small,
+    .rank-row small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.35; }
+
+    .tabs { display: flex; gap: 8px; margin: 12px 0; overflow-x: auto; }
+    .tab { flex: 0 0 auto; padding: 8px 10px; border-radius: 999px; background: rgba(125, 247, 255, 0.10); color: var(--text); font-size: 0.75rem; font-weight: 900; }
+    .tab.active { background: var(--moon); color: #201509; }
+
+    .floating-text,
+    .button-particle {
+      position: absolute;
+      z-index: 35;
+      pointer-events: none;
+      color: var(--moon);
+      font-weight: 1000;
+      text-shadow: 0 2px 0 #000;
+      animation: floatUp 0.9s ease-out forwards;
+    }
+
+    .button-particle {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--moon);
+      box-shadow: 0 0 12px var(--moon);
+      animation-duration: 0.62s;
+    }
+
+    .toast-stack {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 160px;
+      z-index: 18;
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .quest-toast {
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 850;
+      animation: toast 3.6s ease forwards;
+    }
+
+    .hidden { display: none !important; }
+
+    @keyframes moonPulse { 50% { transform: translateX(-50%) scale(1.035); filter: brightness(1.12); } }
+    @keyframes drift { to { transform: translateX(28%); } }
+    @keyframes sway { 50% { transform: skewX(-1.8deg); } }
+    @keyframes buttonPulse { 50% { box-shadow: 0 12px 0 #5a3510, 0 0 44px rgba(255, 243, 190, 0.58), inset 0 0 22px rgba(255, 255, 255, 0.34); } }
+    @keyframes fly { 0%, 100% { transform: translate(0, 0); opacity: 0.35; } 50% { transform: translate(18px, -26px); opacity: 1; } }
+    @keyframes floatUp { to { transform: translateY(-42px) scale(0.7); opacity: 0; } }
+    @keyframes toast { 0% { opacity: 0; transform: translateY(14px); } 12%, 86% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-10px); } }
+
+    @media (max-width: 440px) {
+      .touch-ui { grid-template-columns: 116px 1fr 64px 64px; }
+      .joystick { width: 116px; height: 116px; }
+      .action-btn { width: 62px; height: 62px; }
+      .counter-grid { grid-template-columns: repeat(2, 52px); }
+      .counter-card { min-width: 52px; padding: 6px; }
+      .overlay-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <div id="boot" class="screen active">
-    <div class="sigil"></div>
-    <h1>Arcanum das Nove Luas</h1>
-    <p>Forjando constelações, grimórios e reinos vivos...</p>
-    <div class="loader"><span></span></div>
-  </div>
+  <main class="game-shell" aria-label="Mata da Lua Branca, RPG metroidvania pixel art em HTML5 Canvas">
+    <canvas id="game" width="540" height="960" aria-label="Canvas principal do jogo"></canvas>
 
-  <main id="menu" class="screen menu">
-    <canvas id="menuSky" width="960" height="540" aria-hidden="true"></canvas>
-    <section class="menu-card">
-      <small>RPG 2D de fantasia mágica</small>
-      <h2>Arcanum das Nove Luas</h2>
-      <p>Escolha seu destino entre reinos humanos, élficos, sombrios, celestiais e dimensões elementais.</p>
-      <div class="menu-actions">
-        <button id="newGame">Novo jogo</button>
-        <button id="continueGame">Continuar</button>
-        <button id="openSaves">Slots de save</button>
-        <button id="openSettings">Configurações</button>
+    <section id="mainMenu" class="screen show" aria-live="polite">
+      <div class="menu-ambient" aria-hidden="true">
+        <div class="moon"></div>
+        <div class="mist"></div>
+        <div class="tree-silhouette"></div>
+        <div class="fireflies" id="menuFireflies"></div>
+      </div>
+      <div class="menu-card">
+        <p class="eyebrow">premium pixel metroidvania</p>
+        <h1 class="brand">Mata da Lua Branca</h1>
+        <p class="subtitle">Explore regiões místicas, evolua até o nível 100, enfrente chefes em 3 fases e salve a floresta sob a luz lunar.</p>
+        <div class="menu-grid">
+          <button class="premium-btn" data-menu="new">Jogar — Novo Jogo</button>
+          <button class="premium-btn secondary" data-menu="continue">Continuar</button>
+          <button class="premium-btn secondary" data-menu="settings">Configurações</button>
+          <button class="premium-btn secondary" data-menu="credits">Créditos</button>
+          <button class="premium-btn secondary" data-menu="ranking">Ranking</button>
+        </div>
       </div>
     </section>
+
+    <section id="gameOver" class="screen" aria-live="polite">
+      <div class="modal-card">
+        <p class="eyebrow" id="endEyebrow">a floresta ainda respira</p>
+        <h2 class="brand" id="endTitle">Fim da Jornada</h2>
+        <p class="subtitle" id="endStats"></p>
+        <div class="modal-actions">
+          <button class="premium-btn restart" data-menu="restart">Reiniciar</button>
+          <button class="premium-btn secondary" data-menu="main">Menu Principal</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="modal" class="modal" aria-live="polite">
+      <div class="modal-card">
+        <p class="eyebrow" id="modalKicker">sistema</p>
+        <h2 id="modalTitle">Painel</h2>
+        <div id="modalBody"></div>
+        <div class="modal-actions" id="modalActions"></div>
+      </div>
+    </section>
+
+    <div class="hud" id="hud" aria-hidden="true">
+      <div class="hud-top">
+        <div class="hero-card">
+          <div class="hero-row">
+            <canvas class="portrait" id="portrait" width="42" height="42"></canvas>
+            <div class="name-block">
+              <b id="heroName">Aerin da Lua</b>
+              <small id="heroLevel">Nível 1 • Floresta Lunar</small>
+            </div>
+          </div>
+          <div class="bar hp" title="Vida"><i id="hpBar"></i></div>
+          <div class="bar xp" title="Experiência"><i id="xpBar"></i></div>
+          <div class="bar energy" title="Energia"><i id="energyBar"></i></div>
+        </div>
+        <div class="counter-grid">
+          <div class="counter-card"><span>🪙 Moedas</span><b id="coinsText">0</b></div>
+          <div class="counter-card"><span>✦ Cristais</span><b id="crystalsText">0</b></div>
+          <div class="counter-card"><span>☠ Abates</span><b id="killsText">0</b></div>
+          <div class="counter-card"><span>⏱ Tempo</span><b id="timeText">00:00</b></div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <button class="mini-btn" data-panel="inventory">🎒</button>
+        <button class="mini-btn" data-panel="skills">✦</button>
+        <button class="mini-btn" data-panel="map">🗺</button>
+        <button class="mini-btn" data-panel="save">💾</button>
+      </div>
+    </div>
+
+    <div class="touch-ui" aria-label="Controles mobile">
+      <div class="joystick" id="joystick"><i class="stick" id="stick"></i></div>
+      <span></span>
+      <button class="action-btn" data-touch="jump">▲</button>
+      <button class="action-btn attack" data-touch="attack">⚔</button>
+    </div>
+
+    <div class="toast-stack" id="toastStack"></div>
   </main>
 
-  <div id="creator" class="screen panel-screen">
-    <section class="glass creator-card">
-      <h2>Criação do Arquimago</h2>
-      <div class="creator-grid">
-        <label>Nome <input id="heroName" maxlength="18" value="Aerin" /></label>
-        <label>Sexo <select id="heroSex"><option>Feminino</option><option>Masculino</option><option>Não-binário</option></select></label>
-        <label>Raça <select id="heroRace"></select></label>
-        <label>Classe <select id="heroClass"></select></label>
-        <label>Aura <input id="heroAura" type="color" value="#8df7ff" /></label>
-        <label>Capa <input id="heroCape" type="color" value="#4f46e5" /></label>
-      </div>
-      <button id="startJourney">Iniciar Jornada</button>
-    </section>
-  </div>
+  <script>
+(() => {
+  const canvas = document.querySelector('#game');
+  const ctx = canvas.getContext('2d');
+  const portrait = document.querySelector('#portrait');
+  const pctx = portrait.getContext('2d');
+  const shell = document.querySelector('.game-shell');
+  const mainMenu = document.querySelector('#mainMenu');
+  const gameOver = document.querySelector('#gameOver');
+  const modal = document.querySelector('#modal');
+  const modalTitle = document.querySelector('#modalTitle');
+  const modalKicker = document.querySelector('#modalKicker');
+  const modalBody = document.querySelector('#modalBody');
+  const modalActions = document.querySelector('#modalActions');
+  const toastStack = document.querySelector('#toastStack');
+  const stick = document.querySelector('#stick');
+  const W = canvas.width;
+  const H = canvas.height;
+  const WORLD_H = 7600;
+  const SAVE_KEY = 'mataLuaBrancaPremiumSaves';
+  const RANK_KEY = 'mataLuaBrancaPremiumRanking';
+  const gravity = 0.72;
+  const keys = { left: false, right: false, jump: false, attack: false, heavy: false, dash: false };
+  const pointer = { x: 0, y: 0, active: false };
+  const random = (a, b) => a + Math.random() * (b - a);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rects = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-  <div id="game" class="game hidden">
-    <canvas id="gameCanvas" width="1280" height="720"></canvas>
-    <div id="hud">
-      <div class="orb red"><span id="hpText">100/100</span></div>
-      <div class="orb blue"><span id="mpText">140/140</span></div>
-      <div class="bars">
-        <div class="bar"><b>Vida</b><i id="hpBar"></i></div>
-        <div class="bar mana"><b>Mana</b><i id="mpBar"></i></div>
-        <div class="bar xp"><b>XP</b><i id="xpBar"></i></div>
-      </div>
-      <div id="regionBadge">Vale Inicial</div>
-      <canvas id="minimap" width="170" height="170"></canvas>
-    </div>
-    <div id="hotbar"></div>
-    <div id="toastLog"></div>
-    <div id="dialogue" class="glass hidden"></div>
-    <div id="tooltip" class="hidden"></div>
-  </div>
+  const regions = [
+    { name: 'Floresta Lunar', y: 6500, sky: ['#102c2a', '#071318'], ground: '#5bbd64', soil: '#58321f', weather: 'lua cheia' },
+    { name: 'Pântano Sombrio', y: 5400, sky: ['#173028', '#070d12'], ground: '#69a84f', soil: '#3d2d1f', weather: 'neblina' },
+    { name: 'Montanhas Congeladas', y: 4300, sky: ['#17314a', '#09111e'], ground: '#b7f4ff', soil: '#52626f', weather: 'neve' },
+    { name: 'Ruínas Antigas', y: 3200, sky: ['#251d39', '#0a0914'], ground: '#c3b36f', soil: '#554833', weather: 'tempestade' },
+    { name: 'Reino Celestial', y: 2100, sky: ['#34476a', '#10172a'], ground: '#e9d88b', soil: '#67533a', weather: 'amanhecer' },
+    { name: 'Templo da Lua', y: 1050, sky: ['#282040', '#080913'], ground: '#fff3be', soil: '#625b76', weather: 'noite' },
+    { name: 'Palácio Branco', y: 0, sky: ['#eaf8ff', '#14243b'], ground: '#ffffff', soil: '#8390aa', weather: 'lua eterna' },
+  ];
 
-  <aside id="overlay" class="overlay hidden">
-    <section class="window glass">
-      <header><h2 id="overlayTitle">Inventário</h2><button id="closeOverlay">✕</button></header>
-      <div id="overlayBody"></div>
-    </section>
-  </aside>
+  const enemyCatalog = [
+    { id: 'slime', name: 'Slime Sombrio', hp: 28, speed: 0.7, color: '#2f8b57', xp: 16, coins: 4 },
+    { id: 'wolf', name: 'Lobo Corrompido', hp: 42, speed: 1.25, color: '#5b6475', xp: 26, coins: 7 },
+    { id: 'bat', name: 'Morcego Lunar', hp: 24, speed: 1.4, color: '#2f244a', xp: 20, coins: 5, flying: true },
+    { id: 'spider', name: 'Aranha Gigante', hp: 54, speed: 0.95, color: '#513147', xp: 34, coins: 10 },
+    { id: 'guardian', name: 'Guardião da Floresta', hp: 120, speed: 0.65, color: '#3f7d47', xp: 90, coins: 22, elite: true },
+    { id: 'mist', name: 'Espírito da Névoa', hp: 96, speed: 0.95, color: '#b7fff2', xp: 75, coins: 18, flying: true, elite: true },
+    { id: 'knight', name: 'Cavaleiro Sombrio', hp: 150, speed: 0.8, color: '#20222f', xp: 120, coins: 28, elite: true },
+  ];
 
-  <div id="pause" class="screen panel-screen hidden">
-    <section class="glass pause-card">
-      <h2>Jogo pausado</h2>
-      <button data-action="resume">Continuar</button>
-      <button data-action="inventory">Inventário</button>
-      <button data-action="map">Mapa do mundo</button>
-      <button data-action="grimoire">Grimório</button>
-      <button data-action="skills">Árvore de habilidades</button>
-      <button data-action="quests">Missões</button>
-      <button data-action="save">Salvar manualmente</button>
-      <button data-action="settings">Configurações</button>
-    </section>
-  </div>
+  const bosses = [
+    { name: 'Raiz-Coração', hp: 420, color: '#538b4f', region: 'Floresta Lunar' },
+    { name: 'Soberana da Névoa', hp: 560, color: '#c6fff6', region: 'Pântano Sombrio' },
+    { name: 'Cavaleiro da Lua Vazia', hp: 780, color: '#d9d0ff', region: 'Templo da Lua' },
+  ];
 
-  <script src="world.js" defer></script>
-  <script src="weather.js" defer></script>
-  <script src="inventory.js" defer></script>
-  <script src="quests.js" defer></script>
-  <script src="magic.js" defer></script>
-  <script src="combat.js" defer></script>
-  <script src="npc.js" defer></script>
-  <script src="audio.js" defer></script>
-  <script src="save.js" defer></script>
-  <script src="engine.js" defer></script>
-  <script src="main.js" defer></script>
+  const lootTable = [
+    { name: 'Madeira', type: 'Materiais', rarity: 'Comum' },
+    { name: 'Pedra', type: 'Materiais', rarity: 'Comum' },
+    { name: 'Cristal Lunar', type: 'Relíquias', rarity: 'Raro' },
+    { name: 'Essência Sombria', type: 'Materiais', rarity: 'Raro' },
+    { name: 'Fragmento da Lua Branca', type: 'Relíquias', rarity: 'Lendário' },
+    { name: 'Espada de Orvalho', type: 'Armas', rarity: 'Incomum', atk: 4 },
+    { name: 'Cajado Astral', type: 'Armas', rarity: 'Épico', atk: 9 },
+    { name: 'Capa da Aurora', type: 'Armaduras', rarity: 'Raro', def: 5 },
+    { name: 'Poção Rubra', type: 'Poções', rarity: 'Comum', heal: 35 },
+  ];
+
+  const skillTree = [
+    { id: 'dash', name: 'Dash Lunar', desc: 'Dash atravessa inimigos e causa dano leve.', cost: 1 },
+    { id: 'teleport', name: 'Teleporte', desc: 'Evade rapidamente com rastro de névoa.', cost: 2 },
+    { id: 'moonBurst', name: 'Explosão Lunar', desc: 'Ataque especial em área ao encher energia.', cost: 3 },
+    { id: 'magicArrow', name: 'Flecha Mágica', desc: 'Dispara projétil de luz com ataque pesado.', cost: 2 },
+    { id: 'shield', name: 'Escudo Mágico', desc: 'Reduz dano durante alguns segundos.', cost: 2 },
+    { id: 'spin', name: 'Corte Giratório', desc: 'Combo no chão ativa golpe circular.', cost: 3 },
+  ];
+
+  let cameraY = WORLD_H - H;
+  let lastTime = 0;
+  let gameState = 'menu';
+  let currentSlot = 0;
+  let runTime = 0;
+  let shake = 0;
+  let platforms = [];
+  let enemies = [];
+  let npcs = [];
+  let items = [];
+  let particles = [];
+  let projectiles = [];
+  let scenery = [];
+  let rain = [];
+  let autoSaveTimer = 0;
+  let audioCtx;
+  let muted = false;
+
+  const hero = {
+    name: 'Aerin da Lua', x: 250, y: WORLD_H - 170, w: 30, h: 46, vx: 0, vy: 0, face: 1,
+    hp: 120, maxHp: 120, energy: 100, maxEnergy: 100, xp: 0, nextXp: 100, level: 1, skillPoints: 0,
+    coins: 0, crystals: 0, kills: 0, onGround: false, coyote: 0, jumpBuffer: 0, invuln: 0, attack: 0,
+    combo: 0, comboTimer: 0, dashCd: 0, death: 0, outfit: '#263532', cape: '#111918', eyes: '#bdf7e9',
+    weapon: { name: 'Lâmina de Carvalho', type: 'Armas', rarity: 'Comum', atk: 8 }, armor: null,
+    inventory: [], skills: ['dash'], quests: [
+      { type: 'Principal', name: 'O Chamado da Lua Branca', progress: 0, goal: 3, reward: 'Fragmento da Lua Branca' },
+      { type: 'Caçada', name: 'Limpar a Trilha', progress: 0, goal: 12, reward: 'Cristal Lunar' },
+    ],
+    achievements: [], pets: [], mount: null, currentRegion: 'Floresta Lunar', fastTravel: ['Floresta Lunar'], discoveredSecrets: 0,
+  };
+
+  function spawnMenuFireflies() {
+    const wrap = document.querySelector('#menuFireflies');
+    wrap.innerHTML = Array.from({ length: 34 }, (_, i) => `<i style="left:${random(3, 96)}%;top:${random(10, 92)}%;animation-delay:${-random(0, 6)}s;animation-duration:${random(4, 9)}s"></i>`).join('');
+  }
+
+  function beep(type = 'ui') {
+    if (muted) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const now = audioCtx.currentTime;
+      const freq = { ui: 660, attack: 180, hit: 92, coin: 880, level: 520, hurt: 120, boss: 58 }[type] || 440;
+      osc.type = type === 'coin' || type === 'level' ? 'triangle' : 'square';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(freq * (type === 'hurt' ? 0.55 : 1.8), now + 0.12);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(type === 'boss' ? 0.14 : 0.06, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } catch (err) { muted = true; }
+  }
+
+  function vibrate(ms = 24) {
+    if (navigator.vibrate) navigator.vibrate(ms);
+  }
+
+  function buttonParticles(button) {
+    const box = button.getBoundingClientRect();
+    const host = shell.getBoundingClientRect();
+    for (let i = 0; i < 16; i += 1) {
+      const p = document.createElement('i');
+      p.className = 'button-particle';
+      p.style.left = `${box.left - host.left + random(8, box.width - 8)}px`;
+      p.style.top = `${box.top - host.top + random(8, box.height - 8)}px`;
+      p.style.transform = `translate(${random(-34, 34)}px, ${random(-22, 12)}px)`;
+      shell.appendChild(p);
+      setTimeout(() => p.remove(), 680);
+    }
+  }
+
+  function toast(text) {
+    const el = document.createElement('div');
+    el.className = 'quest-toast';
+    el.textContent = text;
+    toastStack.appendChild(el);
+    setTimeout(() => el.remove(), 3700);
+  }
+
+  function buildWorld() {
+    platforms = [];
+    enemies = [];
+    npcs = [];
+    items = [];
+    scenery = [];
+    rain = Array.from({ length: 90 }, () => ({ x: random(0, W), y: random(0, H), s: random(8, 18) }));
+    platforms.push({ x: 0, y: WORLD_H - 90, w: W, h: 130, kind: 'ground' });
+    let y = WORLD_H - 260;
+    let side = 0;
+    while (y > 120) {
+      const region = regionAt(y);
+      const width = random(118, 220);
+      const x = side ? random(W * 0.48, W - width - 24) : random(20, W * 0.46 - width * 0.2);
+      platforms.push({ x, y, w: width, h: 30, kind: Math.random() > 0.18 ? 'grass' : 'ruin', region: region.name });
+      if (Math.random() > 0.34) enemies.push(makeEnemy(x + width / 2 - 16, y - 34, y, region));
+      if (Math.random() > 0.46) items.push({ type: 'crystal', x: x + width / 2, y: y - 42, w: 18, h: 18, bob: random(0, 9), taken: false });
+      if (Math.random() > 0.74) items.push({ type: 'chest', x: x + random(24, width - 38), y: y - 25, w: 24, h: 22, opened: false });
+      y -= random(104, 146);
+      side = 1 - side;
+    }
+    bosses.forEach((boss, i) => enemies.push(makeBoss(92 + i * 122, 980 + i * 1480, boss)));
+    platforms.push({ x: 60, y: 44, w: 420, h: 34, kind: 'palace', region: 'Palácio Branco' });
+    npcs.push(makeNpc('Mercador', 92, WORLD_H - 134, 'Compro Essência Sombria e vendo poções raras.'));
+    npcs.push(makeNpc('Ferreiro', 218, WORLD_H - 134, 'Traga Cristal Lunar e eu reforçarei sua lâmina.'));
+    npcs.push(makeNpc('Mago', 350, WORLD_H - 134, 'A árvore de habilidades desperta com fragmentos de luz.'));
+    npcs.push(makeNpc('Curandeira', 455, WORLD_H - 134, 'Descanse sob a lua e cure suas feridas.'));
+    for (let i = 0; i < 120; i += 1) scenery.push({ x: random(0, W), y: random(80, WORLD_H - 80), t: Math.floor(random(0, 5)), s: random(0.7, 1.4) });
+  }
+
+  function regionAt(y) {
+    return regions.find((region, i) => y >= region.y || i === regions.length - 1) || regions[0];
+  }
+
+  function makeEnemy(x, y, platformY, region) {
+    const pool = enemyCatalog.filter(e => region.name.includes('Floresta') ? !e.elite : true);
+    const base = pool[Math.floor(random(0, pool.length))];
+    const scale = 1 + (WORLD_H - y) / WORLD_H * 1.7;
+    return { ...base, x, y, w: base.flying ? 32 : 36, h: base.flying ? 28 : 32, maxHp: Math.floor(base.hp * scale), hp: Math.floor(base.hp * scale), vx: random(-base.speed, base.speed), vy: 0, platformY, hurt: 0, dead: false, phase: 1, boss: false, pulse: random(0, 8) };
+  }
+
+  function makeBoss(x, y, base) {
+    return { ...base, id: 'boss', x, y, w: 74, h: 76, maxHp: base.hp, hp: base.hp, vx: 0.7, vy: 0, platformY: y + 80, hurt: 0, dead: false, phase: 1, boss: true, intro: 90, pulse: 0, xp: 420, coins: 140 };
+  }
+
+  function makeNpc(role, x, y, line) {
+    return { role, x, y, w: 28, h: 42, line, talked: false };
+  }
+
+  function defaultInventory() {
+    return [hero.weapon, { name: 'Poção Rubra', type: 'Poções', rarity: 'Comum', heal: 35 }, { name: 'Madeira', type: 'Materiais', rarity: 'Comum', qty: 3 }];
+  }
+
+  function resetGame(slot = 0, data) {
+    currentSlot = slot;
+    buildWorld();
+    Object.assign(hero, {
+      name: data?.name || 'Aerin da Lua', x: data?.x || 250, y: data?.y || WORLD_H - 170, vx: 0, vy: 0, face: 1,
+      hp: data?.hp || 120, maxHp: data?.maxHp || 120, energy: data?.energy || 100, maxEnergy: data?.maxEnergy || 100,
+      xp: data?.xp || 0, nextXp: data?.nextXp || 100, level: data?.level || 1, skillPoints: data?.skillPoints || 0,
+      coins: data?.coins || 0, crystals: data?.crystals || 0, kills: data?.kills || 0,
+      inventory: data?.inventory || defaultInventory(), skills: data?.skills || ['dash'], quests: data?.quests || hero.quests,
+      outfit: data?.outfit || '#263532', cape: data?.cape || '#111918', eyes: data?.eyes || '#bdf7e9', achievements: data?.achievements || [],
+    });
+    runTime = data?.runTime || 0;
+    cameraY = clamp(hero.y - H * 0.50, 0, WORLD_H - H);
+    particles = [];
+    projectiles = [];
+    gameState = 'playing';
+    mainMenu.classList.remove('show');
+    gameOver.classList.remove('show');
+    modal.classList.remove('show');
+    toast('Jornada iniciada. Auto-save ativado.');
+    updateHud();
+    saveGame(slot, true);
+  }
+
+  function savePayload() {
+    return {
+      savedAt: Date.now(), name: hero.name, x: hero.x, y: hero.y, hp: hero.hp, maxHp: hero.maxHp, energy: hero.energy, maxEnergy: hero.maxEnergy,
+      xp: hero.xp, nextXp: hero.nextXp, level: hero.level, skillPoints: hero.skillPoints, coins: hero.coins, crystals: hero.crystals,
+      kills: hero.kills, inventory: hero.inventory, skills: hero.skills, quests: hero.quests, outfit: hero.outfit, cape: hero.cape, eyes: hero.eyes,
+      runTime, currentRegion: hero.currentRegion, achievements: hero.achievements,
+    };
+  }
+
+  function loadSaves() {
+    try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || [null, null, null]; } catch (err) { return [null, null, null]; }
+  }
+
+  function saveGame(slot = currentSlot, silent = false) {
+    const saves = loadSaves();
+    saves[slot] = savePayload();
+    localStorage.setItem(SAVE_KEY, JSON.stringify(saves));
+    if (!silent) { toast(`Jogo salvo no slot ${slot + 1}.`); beep('level'); }
+  }
+
+  function loadGame(slot = 0) {
+    const save = loadSaves()[slot];
+    if (!save) { toast('Slot vazio.'); return; }
+    resetGame(slot, save);
+  }
+
+  function recordRanking() {
+    const ranking = JSON.parse(localStorage.getItem(RANK_KEY) || '[]');
+    ranking.push({ name: hero.name, score: hero.level * 1000 + hero.coins + hero.crystals * 35 + hero.kills * 80, level: hero.level, kills: hero.kills, time: runTime, date: Date.now() });
+    ranking.sort((a, b) => b.score - a.score);
+    localStorage.setItem(RANK_KEY, JSON.stringify(ranking.slice(0, 10)));
+  }
+
+  function updateHud() {
+    document.querySelector('#heroName').textContent = hero.name;
+    document.querySelector('#heroLevel').textContent = `Nível ${hero.level} • ${hero.currentRegion}`;
+    document.querySelector('#hpBar').style.width = `${clamp(hero.hp / hero.maxHp * 100, 0, 100)}%`;
+    document.querySelector('#xpBar').style.width = `${clamp(hero.xp / hero.nextXp * 100, 0, 100)}%`;
+    document.querySelector('#energyBar').style.width = `${clamp(hero.energy / hero.maxEnergy * 100, 0, 100)}%`;
+    document.querySelector('#coinsText').textContent = hero.coins;
+    document.querySelector('#crystalsText').textContent = hero.crystals;
+    document.querySelector('#killsText').textContent = hero.kills;
+    const mm = Math.floor(runTime / 60).toString().padStart(2, '0');
+    const ss = Math.floor(runTime % 60).toString().padStart(2, '0');
+    document.querySelector('#timeText').textContent = `${mm}:${ss}`;
+    drawPortrait();
+  }
+
+  function drawPortrait() {
+    pctx.clearRect(0, 0, 42, 42);
+    pctx.imageSmoothingEnabled = false;
+    pctx.fillStyle = '#07120f'; pctx.fillRect(0, 0, 42, 42);
+    pctx.fillStyle = hero.cape; pctx.fillRect(8, 14, 26, 24);
+    pctx.fillStyle = hero.outfit; pctx.fillRect(13, 15, 17, 20);
+    pctx.fillStyle = '#f6f0d4'; pctx.fillRect(14, 7, 14, 12);
+    pctx.fillStyle = hero.eyes; pctx.fillRect(17, 12, 3, 2); pctx.fillRect(24, 12, 3, 2);
+    pctx.fillStyle = '#78fff0'; pctx.fillRect(31, 17, 3, 17); pctx.fillRect(31, 31, 8, 3);
+  }
+
+  function gainXp(amount) {
+    hero.xp += amount;
+    while (hero.xp >= hero.nextXp && hero.level < 100) {
+      hero.xp -= hero.nextXp;
+      hero.level += 1;
+      hero.nextXp = Math.floor(hero.nextXp * 1.16 + 24);
+      hero.maxHp += 8;
+      hero.maxEnergy += 4;
+      hero.hp = hero.maxHp;
+      hero.energy = hero.maxEnergy;
+      hero.skillPoints += 1;
+      burst(hero.x + hero.w / 2, hero.y, '#fff3be', 40);
+      toast(`Nível ${hero.level}! +1 ponto de talento.`);
+      beep('level');
+    }
+  }
+
+  function addLoot(enemy) {
+    hero.kills += 1;
+    hero.coins += enemy.coins || 5;
+    if (Math.random() > 0.48) hero.crystals += enemy.elite || enemy.boss ? 3 : 1;
+    gainXp(enemy.xp || 12);
+    const loot = { ...lootTable[Math.floor(random(0, lootTable.length))] };
+    hero.inventory.push(loot);
+    hero.quests.forEach(q => { if (q.type === 'Caçada' || enemy.boss) q.progress = clamp(q.progress + 1, 0, q.goal); });
+    toast(`${enemy.name} derrotado • loot: ${loot.name}`);
+    checkAchievements();
+  }
+
+  function checkAchievements() {
+    const unlock = (id, text) => {
+      if (!hero.achievements.includes(id)) { hero.achievements.push(id); toast(`Conquista: ${text}`); }
+    };
+    if (hero.kills >= 10) unlock('hunter', 'Caçador da Névoa');
+    if (hero.crystals >= 25) unlock('crystals', 'Colecionador Lunar');
+    if (hero.level >= 10) unlock('level10', 'Despertar da Lua');
+  }
+
+  function keyFor(code) {
+    if (['ArrowLeft', 'KeyA'].includes(code)) return 'left';
+    if (['ArrowRight', 'KeyD'].includes(code)) return 'right';
+    if (['ArrowUp', 'KeyW', 'Space'].includes(code)) return 'jump';
+    if (['KeyJ', 'KeyX'].includes(code)) return 'attack';
+    if (['KeyK', 'KeyC'].includes(code)) return 'heavy';
+    if (['ShiftLeft', 'ShiftRight', 'KeyL'].includes(code)) return 'dash';
+    return null;
+  }
+
+  addEventListener('keydown', (event) => {
+    const key = keyFor(event.code);
+    if (!key) return;
+    event.preventDefault();
+    keys[key] = true;
+    if (key === 'jump') hero.jumpBuffer = 9;
+    if (key === 'attack') attack(false);
+    if (key === 'heavy') attack(true);
+    if (key === 'dash') dash();
+  });
+
+  addEventListener('keyup', (event) => {
+    const key = keyFor(event.code);
+    if (key) keys[key] = false;
+  });
+
+  document.querySelectorAll('[data-menu]').forEach(button => button.addEventListener('click', () => handleMenu(button)));
+  document.querySelectorAll('.premium-btn').forEach(button => {
+    button.addEventListener('pointerenter', () => buttonParticles(button));
+    button.addEventListener('pointerdown', () => { button.classList.add('pressed'); buttonParticles(button); beep('ui'); });
+    button.addEventListener('pointerup', () => button.classList.remove('pressed'));
+    button.addEventListener('pointerleave', () => button.classList.remove('pressed'));
+  });
+  document.querySelectorAll('[data-panel]').forEach(button => button.addEventListener('click', () => openPanel(button.dataset.panel)));
+  document.querySelectorAll('[data-touch]').forEach(button => {
+    const key = button.dataset.touch;
+    button.addEventListener('pointerdown', event => { event.preventDefault(); button.classList.add('down'); keys[key] = true; if (key === 'jump') hero.jumpBuffer = 9; if (key === 'attack') attack(false); });
+    button.addEventListener('pointerup', () => { button.classList.remove('down'); keys[key] = false; });
+    button.addEventListener('pointercancel', () => { button.classList.remove('down'); keys[key] = false; });
+  });
+
+  const joystick = document.querySelector('#joystick');
+  joystick.addEventListener('pointerdown', event => { pointer.active = true; joystick.setPointerCapture(event.pointerId); moveStick(event); });
+  joystick.addEventListener('pointermove', moveStick);
+  joystick.addEventListener('pointerup', releaseStick);
+  joystick.addEventListener('pointercancel', releaseStick);
+
+  function moveStick(event) {
+    if (!pointer.active) return;
+    const box = joystick.getBoundingClientRect();
+    const dx = event.clientX - (box.left + box.width / 2);
+    const dy = event.clientY - (box.top + box.height / 2);
+    const dist = Math.min(42, Math.hypot(dx, dy));
+    const angle = Math.atan2(dy, dx);
+    const sx = Math.cos(angle) * dist;
+    const sy = Math.sin(angle) * dist;
+    stick.style.transform = `translate(calc(-50% + ${sx}px), calc(-50% + ${sy}px))`;
+    keys.left = sx < -12;
+    keys.right = sx > 12;
+    if (sy < -30) hero.jumpBuffer = 9;
+  }
+
+  function releaseStick() {
+    pointer.active = false;
+    keys.left = false;
+    keys.right = false;
+    stick.style.transform = 'translate(-50%, -50%)';
+  }
+
+  function handleMenu(button) {
+    const action = button.dataset.menu;
+    buttonParticles(button);
+    beep('ui');
+    if (action === 'new' || action === 'restart') resetGame(0);
+    if (action === 'continue') openPanel('save');
+    if (action === 'settings') openPanel('settings');
+    if (action === 'credits') openPanel('credits');
+    if (action === 'ranking') openPanel('ranking');
+    if (action === 'main') { gameState = 'menu'; gameOver.classList.remove('show'); mainMenu.classList.add('show'); }
+  }
+
+  function openPanel(type) {
+    beep('ui');
+    modal.classList.add('show');
+    modalKicker.textContent = type;
+    modalTitle.textContent = ({ inventory: 'Inventário', skills: 'Árvore de Habilidades', map: 'Mapa Mundial', save: 'Sistema de Save', settings: 'Configurações', credits: 'Créditos', ranking: 'Ranking Lunar' })[type] || 'Painel';
+    modalActions.innerHTML = '<button class="premium-btn secondary" data-close>Fechar</button>';
+    modalActions.querySelector('[data-close]').onclick = () => modal.classList.remove('show');
+    if (type === 'inventory') renderInventory();
+    if (type === 'skills') renderSkills();
+    if (type === 'map') renderMap();
+    if (type === 'save') renderSaves();
+    if (type === 'settings') renderSettings();
+    if (type === 'credits') renderCredits();
+    if (type === 'ranking') renderRanking();
+  }
+
+  function renderInventory(filter = 'Todos') {
+    const cats = ['Todos', 'Armas', 'Armaduras', 'Poções', 'Materiais', 'Relíquias'];
+    const list = hero.inventory.filter(item => filter === 'Todos' || item.type === filter);
+    modalBody.innerHTML = `<div class="tabs">${cats.map(c => `<button class="tab ${c === filter ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('')}</div><div class="overlay-grid">${list.map((item, i) => `<div class="item-card" draggable="true"><b>${rarityIcon(item.rarity)} ${item.name}</b><small>${item.type} • ${item.rarity}${item.atk ? ` • ATQ +${item.atk}` : ''}${item.def ? ` • DEF +${item.def}` : ''}</small><button class="tab" data-equip="${i}">Equipar/Usar</button></div>`).join('') || '<p class="subtitle">Inventário vazio.</p>'}</div>`;
+    modalBody.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => renderInventory(b.dataset.cat));
+    modalBody.querySelectorAll('[data-equip]').forEach(b => b.onclick = () => useItem(+b.dataset.equip, filter));
+  }
+
+  function useItem(index, filter) {
+    const list = hero.inventory.filter(item => filter === 'Todos' || item.type === filter);
+    const item = list[index];
+    if (!item) return;
+    if (item.type === 'Armas') hero.weapon = item;
+    if (item.type === 'Armaduras') hero.armor = item;
+    if (item.heal) { hero.hp = clamp(hero.hp + item.heal, 0, hero.maxHp); hero.inventory.splice(hero.inventory.indexOf(item), 1); }
+    toast(`${item.name} equipado/usado.`);
+    renderInventory(filter);
+  }
+
+  function rarityIcon(rarity) {
+    return { Comum: '□', Incomum: '◇', Raro: '◆', Épico: '✦', Lendário: '☾', Mítico: '✺' }[rarity] || '□';
+  }
+
+  function renderSkills() {
+    modalBody.innerHTML = `<p class="subtitle">Pontos disponíveis: <b>${hero.skillPoints}</b></p><div class="overlay-grid">${skillTree.map(s => `<div class="skill-card"><b>${hero.skills.includes(s.id) ? '✓' : '○'} ${s.name}</b><small>${s.desc}<br>Custo: ${s.cost} talento(s)</small><button class="tab" data-skill="${s.id}">${hero.skills.includes(s.id) ? 'Aprendido' : 'Aprender'}</button></div>`).join('')}</div>`;
+    modalBody.querySelectorAll('[data-skill]').forEach(b => b.onclick = () => {
+      const skill = skillTree.find(s => s.id === b.dataset.skill);
+      if (hero.skills.includes(skill.id)) return;
+      if (hero.skillPoints < skill.cost) { toast('Talentos insuficientes.'); return; }
+      hero.skillPoints -= skill.cost;
+      hero.skills.push(skill.id);
+      toast(`${skill.name} aprendido.`);
+      renderSkills();
+    });
+  }
+
+  function renderMap() {
+    modalBody.innerHTML = `<div class="overlay-grid">${regions.map(r => `<div class="item-card"><b>${r.name}</b><small>Clima: ${r.weather}<br>${hero.fastTravel.includes(r.name) ? 'Fast travel liberado' : 'Ainda bloqueado'}</small><button class="tab" data-travel="${r.name}">Viajar</button></div>`).join('')}</div><p class="subtitle">Extras: pesca, mineração, loja, crafting, pets, montarias e segredos aparecem como eventos nas regiões.</p>`;
+    modalBody.querySelectorAll('[data-travel]').forEach(b => b.onclick = () => {
+      if (!hero.fastTravel.includes(b.dataset.travel)) { toast('Fast travel ainda não liberado.'); return; }
+      const region = regions.find(r => r.name === b.dataset.travel);
+      hero.y = clamp(region.y + 260, 90, WORLD_H - 160);
+      cameraY = clamp(hero.y - H * 0.5, 0, WORLD_H - H);
+      modal.classList.remove('show');
+    });
+  }
+
+  function renderSaves() {
+    const saves = loadSaves();
+    modalBody.innerHTML = `<div class="overlay-grid">${saves.map((s, i) => `<div class="slot"><b>Slot ${i + 1}</b><small>${s ? `Nv ${s.level} • ${s.currentRegion || 'Floresta'} • ${new Date(s.savedAt).toLocaleString('pt-BR')}` : 'Vazio'}</small><button class="tab" data-load="${i}">Carregar</button><button class="tab" data-save="${i}">Salvar</button></div>`).join('')}</div>`;
+    modalBody.querySelectorAll('[data-load]').forEach(b => b.onclick = () => loadGame(+b.dataset.load));
+    modalBody.querySelectorAll('[data-save]').forEach(b => b.onclick = () => { saveGame(+b.dataset.save); renderSaves(); });
+  }
+
+  function renderSettings() {
+    modalBody.innerHTML = `<div class="setting-row"><b>Áudio</b><small>Sons de UI, passos, ataque, dano, coleta, chefes e vitória via WebAudio.</small><button class="tab" data-audio>${muted ? 'Ativar' : 'Mutar'}</button></div><div class="setting-row"><b>Customização</b><small>Cor da roupa, capa e olhos do protagonista.</small><input type="color" value="${hero.outfit}" data-color="outfit"><input type="color" value="${hero.cape}" data-color="cape"><input type="color" value="${hero.eyes}" data-color="eyes"></div>`;
+    modalBody.querySelector('[data-audio]').onclick = () => { muted = !muted; renderSettings(); };
+    modalBody.querySelectorAll('[data-color]').forEach(input => input.oninput = () => { hero[input.dataset.color] = input.value; drawPortrait(); });
+  }
+
+  function renderCredits() {
+    modalBody.innerHTML = '<div class="credits-box"><b>Mata da Lua Branca</b><small>Protótipo premium em arquivo HTML único. Direção: game design indie AAA, pixel art procedural, Canvas 2D, JavaScript puro, áudio sintético e sistemas RPG completos.</small></div>';
+  }
+
+  function renderRanking() {
+    const ranking = JSON.parse(localStorage.getItem(RANK_KEY) || '[]');
+    modalBody.innerHTML = `<div class="overlay-grid">${ranking.map((r, i) => `<div class="rank-row"><b>#${i + 1} ${r.name}</b><small>${r.score} pts • Nv ${r.level} • ${r.kills} abates • ${Math.floor(r.time)}s</small></div>`).join('') || '<p class="subtitle">Sem pontuações ainda.</p>'}</div>`;
+  }
+
+  function attack(heavy = false) {
+    if (gameState !== 'playing' || hero.attack > 0) return;
+    hero.attack = heavy ? 22 : 13;
+    hero.combo = hero.comboTimer > 0 ? (hero.combo + 1) % 4 : 1;
+    hero.comboTimer = 42;
+    const dmg = (hero.weapon?.atk || 8) + hero.level * 1.2 + (heavy ? 18 : hero.combo * 4);
+    const blade = { x: hero.face > 0 ? hero.x + hero.w - 5 : hero.x - (heavy ? 54 : 38), y: hero.y + (hero.onGround ? 4 : -6), w: heavy ? 62 : 42, h: hero.onGround ? 34 : 52 };
+    enemies.forEach(enemy => {
+      if (enemy.dead || !rects(blade, enemy)) return;
+      damageEnemy(enemy, dmg, hero.face * (heavy ? 7 : 4), heavy ? -7 : -4);
+    });
+    if (heavy && hero.skills.includes('magicArrow') && hero.energy >= 16) {
+      hero.energy -= 16;
+      projectiles.push({ x: hero.x + hero.w / 2, y: hero.y + 16, vx: hero.face * 9, vy: 0, w: 22, h: 8, life: 80, dmg: dmg * 0.9 });
+    }
+    if (hero.skills.includes('moonBurst') && hero.energy >= hero.maxEnergy && heavy) {
+      hero.energy = 0;
+      enemies.forEach(enemy => { if (!enemy.dead && Math.hypot(enemy.x - hero.x, enemy.y - hero.y) < 135) damageEnemy(enemy, 90 + hero.level, enemy.x < hero.x ? -9 : 9, -8); });
+      burst(hero.x + hero.w / 2, hero.y + hero.h / 2, '#fff3be', 70);
+      shake = 22;
+    }
+    burst(hero.x + hero.w / 2 + hero.face * 24, hero.y + 18, heavy ? '#fff3be' : '#7df7ff', heavy ? 28 : 16);
+    vibrate(heavy ? 45 : 22);
+    beep('attack');
+  }
+
+  function dash() {
+    if (!hero.skills.includes('dash') || hero.dashCd > 0 || hero.energy < 18) return;
+    hero.energy -= 18;
+    hero.dashCd = 34;
+    hero.vx = hero.face * 15;
+    hero.invuln = 20;
+    burst(hero.x + hero.w / 2, hero.y + hero.h / 2, '#7df7ff', 24);
+  }
+
+  function damageEnemy(enemy, damage, kx, ky) {
+    enemy.hp -= damage;
+    enemy.vx += kx;
+    enemy.vy += ky;
+    enemy.hurt = 12;
+    shake = enemy.boss ? 16 : 8;
+    burst(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2, enemy.boss ? '#fff3be' : '#b7fff2', enemy.boss ? 34 : 18);
+    if (enemy.boss) {
+      const ratio = enemy.hp / enemy.maxHp;
+      enemy.phase = ratio < 0.34 ? 3 : ratio < 0.67 ? 2 : 1;
+    }
+    if (enemy.hp <= 0 && !enemy.dead) {
+      enemy.dead = true;
+      addLoot(enemy);
+    }
+  }
+
+  function burst(x, y, color, amount) {
+    for (let i = 0; i < amount; i += 1) particles.push({ x, y, vx: random(-3.8, 3.8), vy: random(-5.2, 2.2), life: random(22, 58), max: 58, color, size: random(2, 6) });
+  }
+
+  function update(dt) {
+    if (gameState !== 'playing') return;
+    runTime += dt;
+    autoSaveTimer += dt;
+    if (autoSaveTimer > 28) { autoSaveTimer = 0; saveGame(currentSlot, true); toast('Auto-save realizado.'); }
+
+    const region = regionAt(hero.y);
+    if (hero.currentRegion !== region.name) {
+      hero.currentRegion = region.name;
+      if (!hero.fastTravel.includes(region.name)) hero.fastTravel.push(region.name);
+      toast(`Região descoberta: ${region.name}`);
+    }
+
+    const accel = keys.dash ? 1.55 : hero.onGround ? 1.16 : 0.78;
+    if (keys.left) { hero.vx -= accel; hero.face = -1; }
+    if (keys.right) { hero.vx += accel; hero.face = 1; }
+    if (keys.dash) dash();
+    hero.vx = clamp(hero.vx, -8.2, 8.2);
+    hero.vy += gravity;
+    hero.jumpBuffer = Math.max(0, hero.jumpBuffer - 1);
+    hero.coyote = hero.onGround ? 8 : Math.max(0, hero.coyote - 1);
+    if (hero.jumpBuffer && hero.coyote) {
+      hero.vy = -15.8;
+      hero.jumpBuffer = 0;
+      hero.coyote = 0;
+      hero.onGround = false;
+      burst(hero.x + hero.w / 2, hero.y + hero.h, '#58f596', 12);
+    }
+    if (!keys.jump && hero.vy < -5.5) hero.vy *= 0.86;
+    hero.x += hero.vx;
+    hero.x = clamp(hero.x, 6, W - hero.w - 6);
+    hero.vx *= hero.onGround ? 0.82 : 0.94;
+    hero.y += hero.vy;
+    hero.onGround = false;
+    platforms.forEach(p => {
+      const above = hero.y + hero.h - hero.vy <= p.y + 4;
+      if (hero.vy >= 0 && above && rects(hero, p)) {
+        hero.y = p.y - hero.h;
+        hero.vy = 0;
+        hero.onGround = true;
+        hero.energy = clamp(hero.energy + 0.5, 0, hero.maxEnergy);
+      }
+    });
+    hero.attack = Math.max(0, hero.attack - 1);
+    hero.invuln = Math.max(0, hero.invuln - 1);
+    hero.comboTimer = Math.max(0, hero.comboTimer - 1);
+    hero.dashCd = Math.max(0, hero.dashCd - 1);
+    hero.energy = clamp(hero.energy + 0.045, 0, hero.maxEnergy);
+
+    updateEnemies();
+    updateItems();
+    updateProjectiles();
+    updateParticles();
+    npcs.forEach(npc => { if (rects(hero, npc) && !npc.talked) { npc.talked = true; toast(`${npc.role}: ${npc.line}`); } });
+
+    const target = clamp(hero.y - H * 0.48, 0, WORLD_H - H);
+    cameraY += (target - cameraY) * 0.095;
+    if (hero.y < 70) endGame(true);
+    if (hero.y - cameraY > H + 220 || hero.hp <= 0) endGame(false);
+    if (shake > 0) shake *= 0.84;
+    updateHud();
+  }
+
+  function updateEnemies() {
+    enemies.forEach(enemy => {
+      if (enemy.dead) return;
+      enemy.pulse += 0.07 + enemy.phase * 0.015;
+      if (enemy.intro > 0) { enemy.intro -= 1; if (enemy.intro === 1) toast(`Chefe: ${enemy.name} entrou em cena! Fase 1/3`); return; }
+      const dir = hero.x < enemy.x ? -1 : 1;
+      if (enemy.flying || enemy.boss) {
+        enemy.x += Math.sin(enemy.pulse) * enemy.speed + dir * 0.22 * enemy.phase;
+        enemy.y += Math.sin(enemy.pulse * 1.6) * 0.9;
+        if (enemy.boss && Math.random() < 0.012 * enemy.phase) projectiles.push({ x: enemy.x + enemy.w / 2, y: enemy.y + enemy.h / 2, vx: dir * random(3, 5), vy: random(-1, 1), w: 18, h: 18, life: 120, dmg: 18 + enemy.phase * 7, hostile: true });
+      } else {
+        enemy.vy += gravity;
+        enemy.x += enemy.vx + dir * 0.04;
+        enemy.y += enemy.vy;
+        const floor = platforms.find(p => enemy.x + enemy.w > p.x && enemy.x < p.x + p.w && enemy.y + enemy.h >= p.y && enemy.y + enemy.h <= p.y + 28);
+        if (floor) { enemy.y = floor.y - enemy.h; enemy.vy = 0; }
+        if (Math.random() < 0.012) enemy.vx *= -1;
+      }
+      if (enemy.x < 5 || enemy.x + enemy.w > W - 5) enemy.vx *= -1;
+      enemy.x = clamp(enemy.x, 5, W - enemy.w - 5);
+      enemy.hurt = Math.max(0, enemy.hurt - 1);
+      if (hero.invuln <= 0 && rects(hero, enemy)) hurtHero(enemy.boss ? 22 + enemy.phase * 8 : enemy.elite ? 18 : 11, enemy.x > hero.x ? -8 : 8);
+    });
+  }
+
+  function hurtHero(amount, knock) {
+    hero.hp -= amount;
+    hero.invuln = hero.skills.includes('shield') ? 48 : 72;
+    hero.vx = knock;
+    hero.vy = -8;
+    shake = 18;
+    burst(hero.x + hero.w / 2, hero.y + hero.h / 2, '#ff5b78', 28);
+    vibrate(70);
+    beep('hurt');
+  }
+
+  function updateItems() {
+    items.forEach(item => {
+      if (item.taken || item.opened) return;
+      item.bob += 0.08;
+      const box = { x: item.x - 10, y: item.y - 10 + Math.sin(item.bob) * 5, w: item.w + 10, h: item.h + 10 };
+      if (!rects(hero, box)) return;
+      if (item.type === 'crystal') {
+        item.taken = true;
+        hero.crystals += 1;
+        hero.coins += 2;
+        gainXp(8);
+        burst(item.x, item.y, '#fff3be', 18);
+        beep('coin');
+      } else {
+        item.opened = true;
+        const loot = { ...lootTable[Math.floor(random(0, lootTable.length))] };
+        hero.inventory.push(loot);
+        hero.coins += 12;
+        toast(`Baú aberto: ${loot.name}`);
+        burst(item.x, item.y, '#ffd46b', 24);
+      }
+    });
+  }
+
+  function updateProjectiles() {
+    projectiles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 1;
+      if (p.hostile) {
+        if (hero.invuln <= 0 && rects(hero, p)) { p.life = 0; hurtHero(p.dmg, p.vx > 0 ? 8 : -8); }
+      } else {
+        enemies.forEach(enemy => { if (!enemy.dead && rects(p, enemy)) { p.life = 0; damageEnemy(enemy, p.dmg, p.vx * 0.6, -3); } });
+      }
+    });
+    projectiles = projectiles.filter(p => p.life > 0 && p.x > -80 && p.x < W + 80);
+  }
+
+  function updateParticles() {
+    particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life -= 1; });
+    particles = particles.filter(p => p.life > 0);
+  }
+
+  function endGame(won) {
+    gameState = 'over';
+    recordRanking();
+    saveGame(currentSlot, true);
+    document.querySelector('#endEyebrow').textContent = won ? 'a lua branca despertou' : 'a névoa te engoliu';
+    document.querySelector('#endTitle').textContent = won ? 'Vitória Lunar' : 'Fim da Jornada';
+    document.querySelector('#endStats').textContent = `Nível ${hero.level} • ${hero.kills} inimigos • ${hero.crystals} cristais • ${hero.coins} moedas • ${Math.floor(runTime)}s`;
+    gameOver.classList.add('show');
+    beep(won ? 'level' : 'boss');
+  }
+
+  function draw() {
+    ctx.save();
+    ctx.translate(shake ? random(-shake, shake) : 0, shake ? random(-shake, shake) : 0);
+    drawBackground();
+    ctx.translate(0, -Math.floor(cameraY));
+    drawScenery();
+    platforms.forEach(drawPlatform);
+    items.forEach(drawItem);
+    npcs.forEach(drawNpc);
+    enemies.forEach(drawEnemy);
+    projectiles.forEach(drawProjectile);
+    drawHero();
+    particles.forEach(drawParticle);
+    ctx.restore();
+    drawBossBars();
+    drawWeather();
+  }
+
+  function drawBackground() {
+    const region = regionAt(cameraY + H * 0.5);
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, region.sky[0]);
+    sky.addColorStop(1, region.sky[1]);
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+    const dayPulse = (Math.sin(runTime * 0.04) + 1) / 2;
+    ctx.fillStyle = `rgba(255,243,190,${0.62 + dayPulse * 0.18})`;
+    ctx.beginPath(); ctx.arc(W * 0.72, 112 - cameraY * 0.018, 58, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(125,247,255,0.08)'; ctx.beginPath(); ctx.arc(W * 0.72, 112 - cameraY * 0.018, 96, 0, Math.PI * 2); ctx.fill();
+    for (let layer = 0; layer < 4; layer += 1) {
+      const par = 0.07 + layer * 0.065;
+      const base = 300 + layer * 100 - (cameraY * par) % 220;
+      ctx.fillStyle = [`#143228`, '#10261f', '#0b1b17', '#06110f'][layer];
+      for (let i = -1; i < 9; i += 1) {
+        const x = i * 82 + layer * 27 + Math.sin(runTime + i) * (layer + 1);
+        const y = base + Math.sin(i * 2.2 + layer) * 20;
+        ctx.fillRect(x + 34, y - 120, 16 + layer * 4, H);
+        ctx.beginPath(); ctx.moveTo(x - 18, y - 74); ctx.lineTo(x + 42, y - 190); ctx.lineTo(x + 112, y - 74); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x - 4, y - 24); ctx.lineTo(x + 48, y - 136); ctx.lineTo(x + 98, y - 24); ctx.fill();
+      }
+    }
+  }
+
+  function drawScenery() {
+    scenery.forEach(s => {
+      if (s.y < cameraY - 120 || s.y > cameraY + H + 160) return;
+      ctx.save(); ctx.translate(s.x, s.y); ctx.scale(s.s, s.s);
+      if (s.t === 0) { ctx.fillStyle = '#193a27'; ctx.fillRect(-6, -32, 12, 32); ctx.fillStyle = '#4bc06b'; ctx.fillRect(-20, -52, 40, 26); ctx.fillRect(-15, -70, 30, 22); }
+      if (s.t === 1) { ctx.fillStyle = '#665f7d'; ctx.fillRect(-14, -12, 28, 12); ctx.fillStyle = '#9aa4bd'; ctx.fillRect(-8, -20, 18, 8); }
+      if (s.t === 2) { ctx.fillStyle = '#d65b6f'; ctx.fillRect(-5, -9, 10, 9); ctx.fillStyle = '#fff3be'; ctx.fillRect(-7, -14, 14, 5); }
+      if (s.t === 3) { ctx.fillStyle = '#273143'; ctx.fillRect(-10, -30, 20, 30); ctx.fillStyle = '#fff3be'; ctx.fillRect(-7, -36, 14, 5); }
+      if (s.t === 4) { ctx.fillStyle = 'rgba(125,247,255,0.28)'; ctx.fillRect(-20, -5, 40, 5); }
+      ctx.restore();
+    });
+  }
+
+  function drawPlatform(p) {
+    const region = regions.find(r => r.name === p.region) || regionAt(p.y);
+    ctx.fillStyle = p.kind === 'palace' ? '#ffffff' : region.ground;
+    ctx.fillRect(p.x, p.y, p.w, 8);
+    for (let x = p.x; x < p.x + p.w; x += 12) {
+      ctx.fillStyle = x % 24 ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.18)';
+      ctx.fillRect(x, p.y - 5 - ((x / 12) % 2), 10, 6);
+    }
+    ctx.fillStyle = p.kind === 'ruin' ? '#50515e' : region.soil;
+    ctx.fillRect(p.x, p.y + 8, p.w, p.h - 8);
+    for (let x = p.x + 4; x < p.x + p.w; x += 18) {
+      ctx.fillStyle = x % 36 ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.20)';
+      ctx.fillRect(x, p.y + 15, 9, 5); ctx.fillRect(x + 3, p.y + 23, 4, 4);
+    }
+  }
+
+  function drawHero() {
+    if (hero.invuln > 0 && Math.floor(hero.invuln / 5) % 2 === 0) return;
+    const x = Math.floor(hero.x), y = Math.floor(hero.y);
+    const frame = Math.floor(runTime * 10) % 4;
+    const run = Math.abs(hero.vx) > 1 && hero.onGround;
+    const leg = run ? (frame % 2 ? 3 : -2) : 0;
+    ctx.save(); ctx.translate(x + hero.w / 2, y); ctx.scale(hero.face, 1); ctx.translate(-hero.w / 2, 0);
+    ctx.fillStyle = hero.cape; ctx.fillRect(3, 11, 12, 29); ctx.fillRect(2, 20, 8, 22);
+    ctx.fillStyle = hero.outfit; ctx.fillRect(8, 11, 16, 30);
+    ctx.fillStyle = '#f6f0d4'; ctx.fillRect(9, 1, 14, 12);
+    ctx.fillStyle = '#07130f'; ctx.fillRect(11, 5, 3, 3); ctx.fillStyle = hero.eyes; ctx.fillRect(17, 5, 4, 3);
+    ctx.fillStyle = '#202d2b'; ctx.fillRect(5, 13, 7, 21); ctx.fillRect(20, 13, 7, 21);
+    ctx.fillStyle = '#f4ffff'; ctx.fillRect(5, 35 + leg, 8, 7); ctx.fillRect(19, 35 - leg, 8, 7);
+    ctx.fillStyle = '#78fff0'; ctx.fillRect(25, 15, 3, 19); ctx.fillRect(27, 31, 13, 3);
+    if (hero.attack > 0) { ctx.fillStyle = 'rgba(255,243,190,0.72)'; ctx.fillRect(25, hero.combo === 3 ? -5 : 7, hero.combo === 3 ? 52 : 40, 5); ctx.fillRect(42, 12, 18, 5); }
+    ctx.restore();
+  }
+
+  function drawEnemy(e) {
+    if (e.dead || e.y < cameraY - 120 || e.y > cameraY + H + 180) return;
+    const x = Math.floor(e.x), y = Math.floor(e.y);
+    ctx.save();
+    if (e.boss) {
+      ctx.fillStyle = e.hurt ? '#fff3be' : e.color; ctx.fillRect(x + 12, y + 14, 50, 50); ctx.fillRect(x + 23, y, 28, 24);
+      ctx.fillStyle = '#07130f'; ctx.fillRect(x + 25, y + 26, 7, 5); ctx.fillRect(x + 43, y + 26, 7, 5);
+      ctx.fillStyle = '#ff5b78'; ctx.fillRect(x + 10, y + 62, 54, 8);
+      ctx.fillStyle = 'rgba(255,243,190,0.32)'; ctx.beginPath(); ctx.arc(x + 37, y + 38, 34 + Math.sin(e.pulse) * 5, 0, Math.PI * 2); ctx.stroke();
+    } else if (e.id === 'slime') {
+      ctx.fillStyle = e.hurt ? '#fff3be' : e.color; ctx.fillRect(x + 4, y + 12, 28, 18); ctx.fillRect(x + 9, y + 6, 18, 10); ctx.fillStyle = '#9affb8'; ctx.fillRect(x + 10, y + 16, 5, 4); ctx.fillRect(x + 22, y + 16, 5, 4);
+    } else if (e.id === 'bat') {
+      ctx.fillStyle = e.hurt ? '#fff3be' : e.color; ctx.fillRect(x + 10, y + 10, 14, 14); ctx.fillRect(x - 5, y + 13, 17, 6); ctx.fillRect(x + 22, y + 13, 17, 6); ctx.fillStyle = '#c7f9e4'; ctx.fillRect(x + 13, y + 14, 3, 3); ctx.fillRect(x + 20, y + 14, 3, 3);
+    } else if (e.id === 'wolf') {
+      ctx.fillStyle = e.hurt ? '#fff3be' : e.color; ctx.fillRect(x + 4, y + 12, 29, 16); ctx.fillRect(x + 22, y + 5, 16, 13); ctx.fillStyle = '#ff5b78'; ctx.fillRect(x + 29, y + 10, 4, 3);
+    } else {
+      ctx.fillStyle = e.hurt ? '#fff3be' : e.color; ctx.fillRect(x + 4, y + 8, 28, 22); ctx.fillStyle = '#111'; ctx.fillRect(x, y + 26, 8, 4); ctx.fillRect(x + 28, y + 26, 8, 4); ctx.fillStyle = '#b7fff2'; ctx.fillRect(x + 10, y + 14, 4, 4); ctx.fillRect(x + 22, y + 14, 4, 4);
+    }
+    if (e.elite && !e.boss) { ctx.strokeStyle = '#ffd46b'; ctx.strokeRect(x - 2, y - 2, e.w + 4, e.h + 4); }
+    ctx.restore();
+  }
+
+  function drawNpc(n) {
+    ctx.fillStyle = '#f6f0d4'; ctx.fillRect(n.x + 8, n.y + 2, 12, 10);
+    ctx.fillStyle = n.role === 'Ferreiro' ? '#8f6f5a' : n.role === 'Mago' ? '#5f5aff' : n.role === 'Curandeira' ? '#58f596' : '#ffd46b';
+    ctx.fillRect(n.x + 5, n.y + 12, 18, 28);
+    ctx.fillStyle = '#fff3be'; ctx.fillRect(n.x + 3, n.y - 10 + Math.sin(runTime * 4) * 2, n.role.length * 5 + 8, 9);
+    ctx.fillStyle = '#07130f'; ctx.font = '8px monospace'; ctx.fillText(n.role, n.x + 6, n.y - 3 + Math.sin(runTime * 4) * 2);
+  }
+
+  function drawItem(item) {
+    if ((item.taken || item.opened) || item.y < cameraY - 80 || item.y > cameraY + H + 80) return;
+    const y = item.y + Math.sin(item.bob || runTime * 3) * 4;
+    if (item.type === 'crystal') { ctx.fillStyle = '#fff3be'; ctx.fillRect(item.x - 5, y - 6, 10, 12); ctx.fillStyle = '#7df7ff'; ctx.fillRect(item.x - 2, y - 12, 4, 24); ctx.fillRect(item.x - 10, y - 2, 20, 4); }
+    else { ctx.fillStyle = '#6a3b1e'; ctx.fillRect(item.x, item.y, item.w, item.h); ctx.fillStyle = '#ffd46b'; ctx.fillRect(item.x + 4, item.y + 6, item.w - 8, 4); }
+  }
+
+  function drawProjectile(p) {
+    ctx.fillStyle = p.hostile ? '#ff5b78' : '#fff3be'; ctx.fillRect(p.x, p.y, p.w, p.h);
+    ctx.fillStyle = p.hostile ? 'rgba(255,91,120,0.25)' : 'rgba(125,247,255,0.25)'; ctx.fillRect(p.x - p.vx * 2, p.y - 2, p.w + Math.abs(p.vx) * 2, p.h + 4);
+  }
+
+  function drawParticle(p) {
+    ctx.globalAlpha = clamp(p.life / p.max, 0, 1); ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); ctx.globalAlpha = 1;
+  }
+
+  function drawBossBars() {
+    const boss = enemies.find(e => e.boss && !e.dead && e.y > cameraY - 80 && e.y < cameraY + H + 120);
+    if (!boss) return;
+    ctx.fillStyle = 'rgba(4,7,11,0.78)'; ctx.fillRect(64, 118, W - 128, 28);
+    ctx.fillStyle = '#ff5b78'; ctx.fillRect(70, 126, (W - 140) * clamp(boss.hp / boss.maxHp, 0, 1), 12);
+    ctx.strokeStyle = '#fff3be'; ctx.strokeRect(64, 118, W - 128, 28);
+    ctx.fillStyle = '#fff3be'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(`${boss.name} • fase ${boss.phase}/3`, W / 2, 113); ctx.textAlign = 'left';
+  }
+
+  function drawWeather() {
+    const region = regionAt(cameraY + H * 0.5);
+    if (region.weather === 'neblina' || region.weather === 'lua cheia') {
+      ctx.fillStyle = region.weather === 'neblina' ? 'rgba(220,255,244,0.08)' : 'rgba(255,243,190,0.045)';
+      for (let i = 0; i < 6; i += 1) ctx.fillRect((i * 130 + runTime * 18) % (W + 140) - 140, 190 + i * 92, 190, 18);
+    }
+    if (region.weather === 'tempestade' || region.weather === 'neve') {
+      ctx.strokeStyle = region.weather === 'neve' ? 'rgba(235,250,255,0.65)' : 'rgba(125,247,255,0.36)';
+      rain.forEach(drop => { drop.y += drop.s * 0.35; drop.x += region.weather === 'neve' ? Math.sin(runTime + drop.y) * 0.2 : -1.8; if (drop.y > H) { drop.y = -20; drop.x = random(0, W); } ctx.beginPath(); ctx.moveTo(drop.x, drop.y); ctx.lineTo(drop.x - 4, drop.y + drop.s); ctx.stroke(); });
+    }
+  }
+
+  function loop(time = 0) {
+    const dt = Math.min(0.033, (time - lastTime) / 1000 || 0.016);
+    lastTime = time;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  spawnMenuFireflies();
+  buildWorld();
+  hero.inventory = defaultInventory();
+  updateHud();
+  loop();
+})();
+  </script>
 </body>
 </html>
